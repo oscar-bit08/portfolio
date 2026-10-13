@@ -1,5 +1,7 @@
 # OscarOS — Portfolio d'Oscar Bonant (BTS SIO)
 
+**▶ Voir le site en ligne : <https://oscar-bit08.github.io/portfolio/>**
+
 Un portfolio qui se visite comme un **système d'exploitation** : une installation façon Windows pour faire connaissance, puis un bureau en « verre liquide » avec des applications à ouvrir, déplacer et réduire.
 
 Le site est écrit en **HTML, CSS et JavaScript sans framework**, sans étape de compilation : il suffit d'ouvrir `index.html`.
@@ -85,12 +87,20 @@ puis ouvrir <http://localhost:5500>.
 
 ---
 
-## 5. Mettre en ligne avec GitHub Pages
+## 5. Mise en ligne (GitHub Pages)
 
-1. Créer un dépôt sur GitHub (par exemple `portfolio`).
-2. Y déposer `index.html`, `README.md` et le dossier `assets/`.
-3. Dans le dépôt : **Settings → Pages → Branch : `main` / dossier `/ (root)`** → **Save**.
-4. Le site est disponible après une minute à l'adresse `https://oscar-bit08.github.io/portfolio/`.
+Le site est publié automatiquement par GitHub Pages depuis la branche `main` de ce dépôt.
+
+Pour publier une modification, depuis le dossier du projet :
+
+```bash
+git add .
+git commit -m "Description de la modification"
+git push
+```
+
+Le site en ligne est mis à jour environ une minute après le `push`.
+Le fichier `.gitignore` empêche de publier les fichiers de travail (PDF de veille, ancienne page, dossier `.claude`).
 
 ---
 
