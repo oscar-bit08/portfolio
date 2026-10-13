@@ -1,0 +1,309 @@
+/* =====================================================================
+   base.css — FONDATIONS
+   =====================================================================
+   1. Variables (couleurs, polices, tailles) : tout le thème se règle ici
+   2. Réinitialisation et styles de base
+   3. Effet « verre liquide » (.glass)
+   4. Boutons, pastilles, roue de chargement
+   5. Écrans (.screen) et accessibilité
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. VARIABLES
+   --------------------------------------------------------------------- */
+:root {
+  /* Polices */
+  --font-ui: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+
+  /* Couleurs du système (thème sombre « eau profonde ») */
+  --bg: #030b18;                          /* fond derrière tout */
+  --text: #f3f7ff;                        /* texte principal */
+  --text-muted: rgba(226, 236, 255, .68); /* texte secondaire */
+  --text-faint: rgba(226, 236, 255, .45); /* texte très discret */
+  --accent: #4cc2ff;                      /* bleu clair (accent Windows 11 sombre) */
+  --accent-strong: #0a84ff;               /* bleu vif pour les boutons */
+  --line: rgba(255, 255, 255, .12);       /* filets et bordures */
+
+  /* Verre */
+  --glass-tint: rgba(255, 255, 255, .10);       /* teinte de la vitre */
+  --glass-tint-strong: rgba(14, 24, 44, .58);   /* vitre sombre (contenu lisible) */
+  --glass-border: rgba(255, 255, 255, .20);
+  --glass-blur: 26px;
+
+  /* Formes et ombres */
+  --radius-xl: 24px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --shadow-lg: 0 30px 80px rgba(0, 8, 24, .5), 0 8px 24px rgba(0, 8, 24, .3);
+
+  /* Dimensions du bureau */
+  --topbar-h: 34px;
+  --dock-space: 100px;    /* hauteur réservée au dock en bas */
+
+  /* Courbes d'animation */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-spring: cubic-bezier(.2, .9, .25, 1.1);
+
+  color-scheme: dark;
+}
+
+/* ---------------------------------------------------------------------
+   2. RÉINITIALISATION ET BASE
+   --------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;            /* un OS ne défile pas : ce sont les fenêtres qui défilent */
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;   /* pas de flash bleu au toucher (mobile) */
+}
+
+h1, h2, h3, p, ul, ol, figure, blockquote { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: inherit; }
+svg { flex-shrink: 0; }
+
+/* L'attribut hidden doit toujours l'emporter (certains éléments ont display:grid) */
+[hidden] { display: none !important; }
+
+/* Focus clavier bien visible (accessibilité) */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Texte lu par les lecteurs d'écran mais invisible à l'écran */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Barres de défilement discrètes (Chrome, Edge, Safari, Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, .25) transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, .22);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Message sans JavaScript */
+.noscript {
+  position: fixed; inset: 0;
+  display: grid; place-items: center;
+  padding: 24px;
+  text-align: center;
+  z-index: 99999;
+  background: var(--bg);
+}
+
+/* ---------------------------------------------------------------------
+   3. EFFET « VERRE LIQUIDE »
+   ---------------------------------------------------------------------
+   Inspiré du « Liquid Glass » des derniers iPhone. Quatre ingrédients :
+     a. backdrop-filter : floute et sature ce qui se trouve DERRIÈRE ;
+     b. un fond très légèrement teinté ;
+     c. ::before → reflet spéculaire (la lumière qui glisse sur la vitre) ;
+     d. ::after  → bordure lumineuse en dégradé (le bord épais du verre
+        qui capte la lumière), réalisée avec un masque CSS.
+   --------------------------------------------------------------------- */
+.glass {
+  position: relative;
+  isolation: isolate;     /* les pseudo-éléments restent sous le contenu */
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05)),
+    var(--glass-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(175%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(175%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .42),     /* arête supérieure éclairée */
+    inset 0 -1px 0 rgba(255, 255, 255, .06),
+    0 18px 50px rgba(0, 8, 24, .35);
+}
+
+/* c. Reflet spéculaire */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(120% 70% at 12% -10%, rgba(255, 255, 255, .22), transparent 55%),
+    radial-gradient(90% 60% at 100% 110%, rgba(125, 211, 252, .12), transparent 60%);
+}
+
+/* d. Bordure lumineuse : un dégradé dont on ne garde que le contour */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;                         /* épaisseur de la bordure */
+  pointer-events: none;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, .55),
+    rgba(255, 255, 255, .08) 38%,
+    rgba(255, 255, 255, .04) 62%,
+    rgba(255, 255, 255, .32));
+  /* Le masque soustrait la zone intérieure : il ne reste que le bord */
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+}
+
+/* Navigateurs sans backdrop-filter : vitre plus opaque pour rester lisible */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: rgba(16, 28, 52, .92); }
+}
+
+/* ---------------------------------------------------------------------
+   4. COMPOSANTS COMMUNS
+   --------------------------------------------------------------------- */
+/* Boutons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 550;
+  font-size: 14.5px;
+  transition: transform .15s, background .2s, box-shadow .2s;
+}
+.btn:active { transform: scale(.97); }
+
+/* Bouton principal : bleu « goutte d'eau » avec reflet */
+.btn--primary {
+  min-width: 132px;
+  color: #fff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 55%),
+    linear-gradient(180deg, #1a96ff, #0067d6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .5),
+    0 8px 22px rgba(10, 132, 255, .45);
+}
+.btn--primary:hover { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 28px rgba(10, 132, 255, .6); }
+
+/* Bouton secondaire : verre */
+.btn--ghost {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .16);
+}
+.btn--ghost:hover { background: rgba(255, 255, 255, .14); }
+
+/* Bouton qui ressemble à un lien */
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  text-align: left;
+}
+.link-btn:hover { text-decoration: underline; }
+
+/* Pastilles (technologies, outils) */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+/* Roue de chargement façon Windows : 5 points qui tournent en se suivant */
+.spinner {
+  position: relative;
+  width: 46px;
+  height: 46px;
+}
+.spinner i {
+  position: absolute;
+  inset: 0;
+  animation: orbite 5.5s infinite;
+  animation-delay: calc(var(--k) * .24s);
+  opacity: 0;
+}
+.spinner i::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #fff;
+}
+.spinner--small { width: 34px; height: 34px; }
+.spinner--small i::before { width: 5px; height: 5px; margin-left: -2.5px; }
+
+@keyframes orbite {
+  0%   { transform: rotate(225deg); opacity: 1; animation-timing-function: ease-out; }
+  7%   { transform: rotate(345deg); animation-timing-function: linear; }
+  30%  { transform: rotate(455deg); animation-timing-function: ease-in-out; }
+  39%  { transform: rotate(690deg); animation-timing-function: linear; }
+  70%  { transform: rotate(815deg); opacity: 1; animation-timing-function: ease-out; }
+  75%  { transform: rotate(945deg); animation-timing-function: ease-out; }
+  76%  { transform: rotate(945deg); opacity: 0; }
+  100% { transform: rotate(945deg); opacity: 0; }
+}
+
+/* ---------------------------------------------------------------------
+   5. ÉCRANS
+   ---------------------------------------------------------------------
+   Chaque « écran » (démarrage, installation, bureau…) occupe toute la
+   fenêtre. Il apparaît en fondu quand on lui ajoute la classe
+   .is-visible (voir OS.showScreen dans core.js).
+   --------------------------------------------------------------------- */
+.os-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.screen {
+  position: fixed;
+  inset: 0;
+  opacity: 0;
+  transition: opacity .45s ease;
+}
+.screen.is-visible { opacity: 1; }
+
+/* Réduction des animations si l'utilisateur l'a demandé dans son système */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

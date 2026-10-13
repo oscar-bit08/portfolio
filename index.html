@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<!--
+  =====================================================================
+  OscarOS — Portfolio d'Oscar Bonant (BTS SIO)
+  =====================================================================
+  Ce fichier est le SQUELETTE du site : il contient uniquement la
+  structure des différents « écrans » du système d'exploitation simulé.
+  Tout le contenu (textes, compétences, projets, liens) est rangé dans
+  assets/js/data.js et injecté dans la page par JavaScript.
+
+  Déroulé d'une visite :
+    1. #boot      → écran de démarrage (logo + roue de chargement)
+    2. #oobe      → « première installation » façon Windows = À PROPOS (5 étapes)
+    3. #hello     → transition « Préparation de votre bureau… »
+    4. #desktop   → le bureau : icônes, fenêtres, dock, barre du haut
+    5. #shutdown  → mise en veille (quand on clique sur l'icône Veille)
+    6. #terminal  → terminal qui écrit la veille technologique, puis redémarrage
+
+  Les écrans 1 à 5 sont regroupés dans #os-screen : c'est ce bloc entier
+  qui « s'éteint » avec l'effet de vieux moniteur cathodique (CRT).
+  =====================================================================
+-->
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <!-- viewport-fit=cover : utilise tout l'écran sur les téléphones à encoche -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>OscarOS — Portfolio d'Oscar Bonant</title>
+  <meta name="description" content="Portfolio d'Oscar Bonant, étudiant en BTS SIO : un mini système d'exploitation à explorer (compétences, réalisations, veille technologique, contact).">
+  <meta name="author" content="Oscar Bonant">
+  <!-- Couleur de la barre du navigateur sur mobile -->
+  <meta name="theme-color" content="#041528">
+
+  <!-- Icône de l'onglet : une goutte d'eau dessinée en SVG (pas de fichier image à charger) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237dd3fc'/%3E%3Cstop offset='1' stop-color='%232563eb'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M32 4C32 4 12 28 12 41a20 20 0 0 0 40 0C52 28 32 4 32 4z' fill='url(%23g)'/%3E%3Cellipse cx='25' cy='38' rx='5' ry='8' fill='%23fff' opacity='.55'/%3E%3C/svg%3E">
+
+  <!-- Polices Google : Geist (interface) et JetBrains Mono (terminal).
+       « preconnect » ouvre la connexion au serveur de polices en avance. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Feuilles de style, de la plus générale à la plus spécifique -->
+  <link rel="stylesheet" href="assets/css/base.css">      <!-- variables, verre, boutons -->
+  <link rel="stylesheet" href="assets/css/boot.css">      <!-- démarrage + slides À propos -->
+  <link rel="stylesheet" href="assets/css/desktop.css">   <!-- fond, icônes, dock, barre -->
+  <link rel="stylesheet" href="assets/css/windows.css">   <!-- fenêtres -->
+  <link rel="stylesheet" href="assets/css/apps.css">      <!-- Compétences, Réalisations, Contact -->
+  <link rel="stylesheet" href="assets/css/veille.css">    <!-- extinction + terminal -->
+</head>
+
+<body>
+  <!-- Message affiché uniquement si JavaScript est désactivé -->
+  <noscript>
+    <div class="noscript">
+      <p>Ce portfolio est une application interactive : merci d'activer JavaScript pour le découvrir.</p>
+    </div>
+  </noscript>
+
+  <!-- =================================================================
+       #os-screen : tout ce qui s'affiche « dans le moniteur ».
+       Quand on met en veille, ce bloc entier s'éteint (effet CRT).
+       ================================================================= -->
+  <div class="os-screen" id="os-screen">
+
+    <!-- 0. FOND D'ÉCRAN « eau / verre » (purement décoratif) -->
+    <div class="wallpaper" aria-hidden="true">
+      <!-- Grosses taches de couleur floutées qui dérivent lentement -->
+      <div class="wallpaper__blob wallpaper__blob--1"></div>
+      <div class="wallpaper__blob wallpaper__blob--2"></div>
+      <div class="wallpaper__blob wallpaper__blob--3"></div>
+      <div class="wallpaper__blob wallpaper__blob--4"></div>
+      <div class="wallpaper__blob wallpaper__blob--5"></div>
+      <!-- Texture d'eau générée par un filtre SVG (bruit de turbulence) -->
+      <svg class="wallpaper__water" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+        <filter id="filtre-eau" x="0" y="0" width="100%" height="100%">
+          <!-- feTurbulence crée un motif aléatoire qui ressemble aux reflets de l'eau -->
+          <feTurbulence type="turbulence" baseFrequency="0.0035 0.011" numOctaves="2" seed="7" result="bruit"/>
+          <!-- On transforme ce bruit en reflets blancs semi-transparents -->
+          <feColorMatrix in="bruit" type="matrix"
+            values="0 0 0 0 1
+                    0 0 0 0 1
+                    0 0 0 0 1
+                    -2.2 0 0 0 1.05"/>
+        </filter>
+        <rect width="100%" height="100%" filter="url(#filtre-eau)"/>
+      </svg>
+      <!-- Léger voile sombre en bas pour faire ressortir le dock -->
+      <div class="wallpaper__vignette"></div>
+    </div>
+
+    <!-- 1. ÉCRAN DE DÉMARRAGE -->
+    <div class="screen boot is-visible" id="boot" aria-live="polite">
+      <div class="boot__logo" aria-hidden="true">
+        <svg viewBox="0 0 64 64" width="88" height="88">
+          <defs>
+            <linearGradient id="boot-goutte" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#a5f3fc"/>
+              <stop offset=".55" stop-color="#38bdf8"/>
+              <stop offset="1" stop-color="#2563eb"/>
+            </linearGradient>
+          </defs>
+          <path d="M32 4C32 4 12 28 12 41a20 20 0 0 0 40 0C52 28 32 4 32 4z" fill="url(#boot-goutte)"/>
+          <ellipse cx="25" cy="38" rx="5" ry="8" fill="#fff" opacity=".55"/>
+        </svg>
+      </div>
+      <p class="boot__name">Oscar<span>OS</span></p>
+      <!-- Roue de chargement façon Windows : 5 points qui tournent -->
+      <div class="spinner" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i></div>
+      <p class="sr-only">Démarrage du portfolio…</p>
+    </div>
+
+    <!-- 2. INSTALLATION (OOBE = Out-Of-Box Experience) → rubrique « À propos » -->
+    <div class="screen oobe" id="oobe" hidden>
+      <div class="oobe__card glass" role="dialog" aria-modal="true" aria-labelledby="oobe-title">
+        <!-- Colonne gauche : illustration de l'étape (injectée par oobe.js) -->
+        <div class="oobe__visual" id="oobe-visual" aria-hidden="true"></div>
+        <!-- Colonne droite : progression + contenu + boutons -->
+        <div class="oobe__content">
+          <ol class="oobe__progress" id="oobe-progress" aria-label="Progression"></ol>
+          <div class="oobe__slide" id="oobe-slide"></div>
+          <div class="oobe__actions">
+            <button class="btn btn--ghost" id="oobe-prev" type="button">Retour</button>
+            <button class="btn btn--primary" id="oobe-next" type="button">Suivant</button>
+          </div>
+        </div>
+      </div>
+      <!-- Pied de l'écran d'installation (comme sous Windows) -->
+      <div class="oobe__footer">
+        <div class="oobe__sysicons" id="oobe-sysicons" aria-hidden="true"></div>
+        <button class="oobe__skip" id="oobe-skip" type="button">Passer l'introduction →</button>
+      </div>
+    </div>
+
+    <!-- 3. TRANSITION « Préparation de votre bureau » -->
+    <div class="screen hello" id="hello" hidden aria-live="polite">
+      <p class="hello__text" id="hello-text"></p>
+      <div class="spinner spinner--small" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i></div>
+    </div>
+
+    <!-- 4. LE BUREAU -->
+    <div class="screen desktop" id="desktop" hidden>
+
+      <!-- Barre du haut (façon macOS) : menu système, appli active, horloge -->
+      <header class="topbar glass" id="topbar">
+        <div class="topbar__left">
+          <button class="topbar__logo" id="system-button" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="system-menu">
+            <svg viewBox="0 0 64 64" width="16" height="16" aria-hidden="true"><path d="M32 4C32 4 12 28 12 41a20 20 0 0 0 40 0C52 28 32 4 32 4z" fill="currentColor"/></svg>
+            <span>OscarOS</span>
+          </button>
+          <span class="topbar__app" id="topbar-app">Bureau</span>
+        </div>
+        <div class="topbar__right" id="topbar-status"></div>
+        <!-- Menu système (s'ouvre sous le logo) -->
+        <div class="system-menu glass" id="system-menu" role="menu" hidden></div>
+      </header>
+
+      <!-- Grand titre central (le « sujet » du fond d'écran) -->
+      <div class="desktop__hero" aria-hidden="true">
+        <p class="desktop__greeting" id="desktop-greeting">Bonjour</p>
+        <p class="desktop__name" id="desktop-name">Oscar</p>
+        <p class="desktop__tag" id="desktop-tag"></p>
+        <p class="desktop__hint">Cliquez sur une icône pour ouvrir une application · glissez-la pour la déplacer</p>
+      </div>
+
+      <!-- Couche des ondulations d'eau quand on clique sur le fond -->
+      <div class="desktop__ripples" id="ripples" aria-hidden="true"></div>
+
+      <!-- Icônes du bureau (placées aléatoirement par desktop.js) -->
+      <div class="desktop__icons" id="desktop-icons" role="group" aria-label="Applications du bureau"></div>
+
+      <!-- Couche des fenêtres (gérée par windows.js) -->
+      <div class="desktop__windows" id="windows"></div>
+
+      <!-- Dock (barre des applications en bas) -->
+      <nav class="dock glass" id="dock" aria-label="Barre des applications"></nav>
+
+      <!-- Zone des notifications -->
+      <div class="toasts" id="toasts" aria-live="polite"></div>
+    </div>
+
+    <!-- 5. MISE EN VEILLE -->
+    <div class="screen shutdown" id="shutdown" hidden aria-live="assertive">
+      <div class="spinner" aria-hidden="true"><i style="--k:0"></i><i style="--k:1"></i><i style="--k:2"></i><i style="--k:3"></i><i style="--k:4"></i></div>
+      <p class="shutdown__title">Mise en veille…</p>
+      <p class="shutdown__sub">Enregistrement de votre session</p>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       6 bis. MESSAGE D'ERREUR DE MISE EN VEILLE
+       Console brute (texte blanc sur noir, sans mise en forme) affichée
+       quelques secondes juste avant le terminal stylé.
+       ================================================================= -->
+  <div class="veille-erreur" id="veille-erreur" hidden aria-live="assertive"></div>
+
+  <!-- =================================================================
+       6. TERMINAL DE VEILLE TECHNOLOGIQUE (hors du « moniteur » principal)
+       ================================================================= -->
+  <div class="terminal" id="terminal" hidden>
+    <div class="terminal__frame">
+      <!-- Barre d'état du terminal -->
+      <header class="terminal__status">
+        <span class="terminal__status-left"><b>OSCAR-OS</b> v1.0 <span class="t-dim">──</span> TTY1 <span class="t-dim">──</span> MODE VEILLE</span>
+        <span class="terminal__status-mid" id="term-file"></span>
+        <span class="terminal__status-right" id="term-clock">00:00:00</span>
+      </header>
+      <!-- Sortie du terminal : le texte s'écrit ici petit à petit -->
+      <main class="terminal__output" id="term-output" aria-live="off" aria-label="Veille technologique"></main>
+      <!-- Colonne de droite : illustration isométrique + sommaire -->
+      <aside class="terminal__aside" id="term-aside" aria-label="Sommaire de la veille"></aside>
+      <!-- Aide en bas : explique quoi faire (accélérer / redémarrer) -->
+      <footer class="terminal__hint" id="term-hint"></footer>
+    </div>
+  </div>
+
+  <!-- =================================================================
+       SCRIPTS — chargés dans l'ordre grâce à « defer ».
+       On n'utilise pas les modules ES (type="module") pour que le site
+       fonctionne aussi en ouvrant simplement index.html (file://).
+       ================================================================= -->
+  <script src="assets/js/data.js" defer></script>            <!-- 1. contenu -->
+  <script src="assets/js/core.js" defer></script>            <!-- 2. outils communs -->
+  <script src="assets/js/icons.js" defer></script>           <!-- 3. icônes SVG -->
+  <script src="assets/js/illustrations.js" defer></script>   <!-- 4. illustrations des slides -->
+  <script src="assets/js/windows.js" defer></script>         <!-- 5. gestionnaire de fenêtres -->
+  <script src="assets/js/apps/competences.js" defer></script><!-- 6. appli Compétences -->
+  <script src="assets/js/apps/realisations.js" defer></script><!-- 7. appli Réalisations -->
+  <script src="assets/js/apps/contact.js" defer></script>    <!-- 8. appli Contact -->
+  <script src="assets/js/veille.js" defer></script>          <!-- 9. veille + terminal -->
+  <script src="assets/js/desktop.js" defer></script>         <!-- 10. bureau -->
+  <script src="assets/js/oobe.js" defer></script>            <!-- 11. démarrage + slides -->
+  <script src="assets/js/main.js" defer></script>            <!-- 12. chef d'orchestre -->
+</body>
+</html>

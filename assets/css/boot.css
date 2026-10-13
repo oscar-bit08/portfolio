@@ -1,0 +1,533 @@
+/* =====================================================================
+   boot.css — DÉMARRAGE, PRÉSENTATION « À PROPOS » ET TRANSITION
+   =====================================================================
+   1. Écran de démarrage (#boot)
+   2. Assistant façon installation Windows (#oobe)
+   3. Contenus des slides (listes, cartes, atouts)
+   4. Illustrations animées
+   5. Transition « Préparation de votre bureau » (#hello)
+   6. Adaptation mobile
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   1. ÉCRAN DE DÉMARRAGE
+   --------------------------------------------------------------------- */
+.boot {
+  z-index: 9000;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  background: #000;
+}
+.boot__logo {
+  filter: drop-shadow(0 0 40px rgba(56, 189, 248, .45));
+  animation: respire 2.4s ease-in-out infinite;
+}
+.boot__name {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: .02em;
+  color: rgba(255, 255, 255, .9);
+  margin-bottom: 34px;
+}
+.boot__name span { font-weight: 700; }
+
+@keyframes respire {
+  0%, 100% { transform: scale(1); opacity: .95; }
+  50%      { transform: scale(1.05); opacity: 1; }
+}
+
+/* ---------------------------------------------------------------------
+   2. ASSISTANT « À PROPOS » (OOBE)
+   --------------------------------------------------------------------- */
+.oobe {
+  z-index: 8000;
+  display: grid;
+  place-items: center;
+  padding: 24px 24px 70px;
+  /* Le fond d'écran reste visible, mais flouté (comme sous Windows) */
+  background: rgba(3, 12, 28, .38);
+  -webkit-backdrop-filter: blur(34px) saturate(140%);
+  backdrop-filter: blur(34px) saturate(140%);
+}
+/* Relancé depuis le bureau : on voit le bureau flouté derrière */
+.oobe--over-desktop { background: rgba(3, 12, 28, .45); }
+
+.oobe__card {
+  width: min(1060px, 100%);
+  height: min(650px, calc(100dvh - 110px));
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg), inset 0 1px 0 rgba(255, 255, 255, .4);
+}
+
+/* Colonne de l'illustration */
+.oobe__visual {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-right: 1px solid var(--line);
+  background:
+    radial-gradient(70% 60% at 50% 45%, rgba(56, 189, 248, .14), transparent 70%),
+    rgba(255, 255, 255, .03);
+}
+
+/* Colonne du contenu */
+.oobe__content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 30px 40px 26px;
+}
+
+/* Barre de progression : une case par étape */
+.oobe__progress {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 8px;
+}
+.oobe__bar {
+  display: block;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .14);
+  overflow: hidden;
+  position: relative;
+}
+.oobe__progress .is-done .oobe__bar { background: var(--accent); }
+/* L'étape en cours se remplit progressivement */
+.oobe__progress .is-current .oobe__bar::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  transform-origin: left;
+  animation: remplir .9s var(--ease-out) forwards;
+}
+@keyframes remplir { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.oobe__step {
+  display: block;
+  margin-top: 7px;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.oobe__progress .is-current .oobe__step { color: var(--text); font-weight: 600; }
+
+/* Zone de la slide (défile si le contenu est long) */
+.oobe__slide {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 30px 6px 6px 0;
+}
+.oobe__kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.oobe__title {
+  margin: 8px 0 16px;
+  font-size: clamp(26px, 3.1vw, 38px);
+  font-weight: 650;
+  line-height: 1.12;
+  letter-spacing: -.025em;
+}
+.oobe__title:focus { outline: none; }
+.oobe__text p {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 56ch;
+}
+.oobe__text p + p { margin-top: 10px; }
+.oobe__text strong { color: var(--text); font-weight: 600; }
+
+/* Boutons Retour / Suivant (en bas à droite, comme sous Windows) */
+.oobe__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  margin-top: 12px;
+}
+
+/* Pied de l'écran : icônes système + lien « Passer » */
+.oobe__footer {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.oobe__sysicons {
+  display: flex;
+  gap: 18px;
+  color: rgba(255, 255, 255, .75);
+}
+.oobe__skip {
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: rgba(255, 255, 255, .85);
+  font-size: 13.5px;
+  transition: background .2s;
+}
+.oobe__skip:hover { background: rgba(255, 255, 255, .16); }
+
+/* ---------------------------------------------------------------------
+   3. CONTENUS DES SLIDES
+   --------------------------------------------------------------------- */
+
+/* Atouts : grille de 2 colonnes */
+.oobe-traits {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+.trait,
+.oobe-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, .06);
+  border: 1px solid rgba(255, 255, 255, .1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+  /* Apparition en cascade */
+  animation: monter .5s var(--ease-out) both;
+  animation-delay: calc(.15s + var(--k) * .08s);
+}
+.trait strong,
+.oobe-card strong { display: block; font-size: 14px; font-weight: 600; }
+.trait span span,
+.oobe-card span span { display: block; font-size: 13px; color: var(--text-muted); line-height: 1.45; margin-top: 2px; }
+.trait__icon,
+.oobe-card__icon {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: linear-gradient(145deg, rgba(76, 194, 255, .55), rgba(10, 132, 255, .35));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
+}
+
+@keyframes monter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Cartes empilées (projet pro) */
+.oobe-cards { display: grid; gap: 10px; margin-top: 18px; }
+.oobe-card__icon { background: linear-gradient(145deg, rgba(251, 146, 60, .6), rgba(234, 88, 12, .35)); }
+
+/* Liste sélectionnable (reprend la liste « Pays ou région » de Windows) */
+.oobe-list {
+  margin-top: 14px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .03);
+}
+.oobe-list__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 11px 16px;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  background: transparent;
+  text-align: left;
+  transition: background .2s;
+}
+.oobe-list__item:last-child { border-bottom: 0; }
+.oobe-list__item:hover { background: rgba(255, 255, 255, .06); }
+.oobe-list__main { flex: 1; min-width: 0; }
+.oobe-list__main strong { display: block; font-size: 14.5px; font-weight: 600; }
+.oobe-list__main span { display: block; font-size: 12.5px; color: var(--text-muted); }
+.oobe-list__date { font-size: 12px; color: var(--text-faint); white-space: nowrap; }
+/* Élément sélectionné : le bandeau bleu de Windows */
+.oobe-list__item.is-selected {
+  background: linear-gradient(180deg, #1683f0, #0063c9);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3);
+}
+.oobe-list__item.is-selected span { color: rgba(255, 255, 255, .85); }
+
+/* Détail de l'élément sélectionné */
+.oobe-detail {
+  margin-top: 12px;
+  padding: 12px 16px 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, .05);
+  border-left: 3px solid var(--accent);
+}
+.oobe-detail li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+.oobe-detail li + li { margin-top: 5px; }
+.oobe-detail li::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: .62em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* ---------------------------------------------------------------------
+   4. ILLUSTRATIONS ANIMÉES
+   --------------------------------------------------------------------- */
+.illu {
+  position: relative;
+  width: min(380px, 82%);
+  aspect-ratio: 1;
+}
+.illu__main {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  animation: flotter 6s ease-in-out infinite;
+  filter: drop-shadow(0 24px 40px rgba(0, 10, 40, .45));
+}
+
+/* Halo lumineux derrière l'illustration */
+.illu__halo {
+  position: absolute;
+  inset: 12%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, .55), transparent 65%);
+  filter: blur(30px);
+  animation: respire 5s ease-in-out infinite;
+}
+.illu__halo--violet { background: radial-gradient(circle, rgba(168, 85, 247, .5), transparent 65%); }
+.illu__halo--indigo { background: radial-gradient(circle, rgba(99, 102, 241, .55), transparent 65%); }
+.illu__halo--teal   { background: radial-gradient(circle, rgba(20, 184, 166, .5), transparent 65%); }
+.illu__halo--orange { background: radial-gradient(circle, rgba(249, 115, 22, .45), transparent 65%); }
+
+/* Pastilles de verre flottantes */
+.illu__chip {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 550;
+  white-space: nowrap;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .08));
+  border: 1px solid rgba(255, 255, 255, .28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 10px 26px rgba(0, 10, 40, .35);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  animation: flotter 5s ease-in-out infinite, apparaitre .6s var(--ease-spring) both;
+  animation-delay: var(--d), calc(.25s + var(--d) * .25);
+}
+.illu__chip .i { color: var(--accent); }
+
+@keyframes flotter {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+@keyframes apparaitre {
+  from { opacity: 0; scale: .6; }
+  to   { opacity: 1; scale: 1; }
+}
+
+/* 4a. Bienvenue : orbite et avion en papier */
+.illu__orbit {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, .22);
+  animation: tourner 18s linear infinite;
+}
+.illu__orbit i {
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 16px 4px rgba(125, 211, 252, .8);
+}
+@keyframes tourner { to { transform: rotate(360deg); } }
+
+.illu__plane {
+  position: absolute;
+  width: 30%;
+  right: 6%;
+  top: 30%;
+  filter: drop-shadow(0 14px 18px rgba(0, 10, 40, .4));
+  animation: planer 7s ease-in-out infinite;
+}
+@keyframes planer {
+  0%, 100% { transform: translate(0, 0) rotate(-6deg); }
+  50%      { transform: translate(-14px, -16px) rotate(2deg); }
+}
+
+/* 4b. Profil : carte d'identité en verre */
+.id-card {
+  position: absolute;
+  top: 22%;
+  left: 13%;
+  right: 13%;            /* hauteur automatique : la carte s'adapte à son contenu */
+  padding: 22px;
+  border-radius: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .24), rgba(255, 255, 255, .06));
+  border: 1px solid rgba(255, 255, 255, .3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 30px 60px rgba(0, 10, 40, .45);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+  backdrop-filter: blur(18px) saturate(170%);
+  animation: flotter 6s ease-in-out infinite;
+}
+.id-card__top { position: relative; width: 64px; margin-bottom: 6px; }
+.id-card__avatar {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #38bdf8, #6366f1 60%, #a855f7);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .45), 0 8px 20px rgba(99, 102, 241, .5);
+}
+.id-card__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid rgba(255, 255, 255, .9);
+}
+.id-card__name { font-size: 20px; font-weight: 650; letter-spacing: -.01em; }
+.id-card__role { font-size: 13px; color: var(--text-muted); }
+.id-card__bars { display: grid; gap: 7px; margin: 10px 0; }
+.id-card__bars i {
+  display: block;
+  height: 7px;
+  width: var(--w);
+  border-radius: 7px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .5), rgba(255, 255, 255, .12));
+}
+.id-card__foot {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* 4c. Formation : la toque se pose sur les livres */
+.illu__cap { animation: poser 4s ease-in-out infinite; transform-origin: 120px 80px; }
+@keyframes poser {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-8px) rotate(2deg); }
+}
+
+/* 4d. Expériences : les tâches se cochent une à une */
+.illu__task {
+  opacity: 0;
+  animation: cocher .5s var(--ease-out) forwards;
+  animation-delay: calc(.4s + var(--i) * .45s);
+}
+@keyframes cocher {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 4e. Projet : trajectoire qui défile et fusée qui vibre */
+.illu__path { animation: pointilles 1.6s linear infinite; }
+@keyframes pointilles { to { stroke-dashoffset: -22; } }
+.illu__rocket { animation: vibrer .18s ease-in-out infinite alternate; }
+@keyframes vibrer { to { translate: .8px -.8px; } }
+
+/* ---------------------------------------------------------------------
+   5. TRANSITION « PRÉPARATION DE VOTRE BUREAU »
+   --------------------------------------------------------------------- */
+.hello {
+  z-index: 8500;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 40px;
+  /* Dégradé animé qui change lentement de couleur (comme sous Windows) */
+  background: linear-gradient(120deg, #031a3a, #0b3a6e, #0e5a8a, #1e3a8a, #031a3a);
+  background-size: 400% 400%;
+  animation: degrade 8s ease infinite;
+}
+@keyframes degrade {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.hello__text {
+  font-size: clamp(26px, 4.4vw, 48px);
+  font-weight: 300;
+  letter-spacing: -.02em;
+  text-align: center;
+  padding: 0 24px;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .35s ease, transform .35s ease;
+}
+.hello__text.is-in { opacity: 1; transform: none; }
+
+/* ---------------------------------------------------------------------
+   6. ADAPTATION MOBILE
+   --------------------------------------------------------------------- */
+@media (max-width: 760px) {
+  .oobe { padding: 10px 10px 58px; }
+  .oobe__card {
+    height: calc(100dvh - 72px);
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(150px, 30%) 1fr;
+  }
+  .oobe__visual { border-right: 0; border-bottom: 1px solid var(--line); }
+  .illu { width: auto; height: 92%; }
+  .illu__chip { font-size: 11px; padding: 5px 9px; }
+  .oobe__content { padding: 18px 18px 16px; }
+  .oobe__slide { padding-top: 18px; }
+  .oobe__step { display: none; }   /* étiquettes masquées : on garde les barres */
+  .oobe-traits { grid-template-columns: 1fr; }
+  .oobe__footer { left: 12px; right: 12px; bottom: 12px; }
+  .btn--primary { min-width: 0; }
+}
