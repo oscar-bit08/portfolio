@@ -207,10 +207,10 @@
           <!-- Reflet sur la vitre -->
           <path d="M36 44h70l-40 122H36z" fill="#fff" opacity=".08"/>
         </svg>
-        ${pastille("briefcase", "Alternance · TDI", 0, 10, 0)}
-        ${pastille("server", "15+ postes", 72, 4, 1.3)}
+        ${pastille("briefcase", "Alternance · TDI-Group", 0, 10, 0)}
+        ${pastille("server", "15+ postes", 72, 4, 1.3, true)}
         ${pastille("wrench", "Assistance N1-N2", 58, 82, .7)}
-        ${pastille("user", "Mairie de Caluire", 0, 76, 1.9)}
+        ${pastille("user", "Mairie de Caluire", 0, 76, 1.9, true)}
       </div>`;
     },
 
@@ -231,7 +231,7 @@
       const P = { x: 10, y: -8 };   // décalage de la profondeur (dessus et côté)
       const marches = [
         { x: 16,  haut: 152, couleur: "#22c55e", titre: "Bac",      lignes: ["Obtenu"] },
-        { x: 89,  haut: 112, couleur: "#38bdf8", titre: "BTS SIO",  lignes: ["Alternance", "chez TDI"] },
+        { x: 89,  haut: 112, couleur: "#38bdf8", titre: "BTS SIO",  lignes: ["Alternance", "TDI-Group"] },
         { x: 162, haut: 72,  couleur: "#f59e0b", titre: "Objectif", lignes: ["Travailler", "dans l'IA"] }
       ];
 

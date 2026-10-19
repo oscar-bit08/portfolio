@@ -41,12 +41,11 @@ window.PORTFOLIO = {
     region: "Métropole lyonnaise",
     // Alternance en cours (affichée sur le bureau, dans les slides et dans Contact)
     alternance: {
-      entreprise: "TDI",
-      ville: "Bron",
+      entreprise: "TDI-Group",
       activite: "éditeur-intégrateur de solutions de gestion d'expéditions"
     },
-    disponibilite: "En alternance chez TDI · Bron",
-    accroche: "Étudiant en BTS SIO · En alternance chez TDI (Bron)",   // sous le prénom, sur le bureau
+    disponibilite: "En alternance chez TDI-Group",
+    accroche: "Étudiant en BTS SIO · En alternance chez TDI-Group",   // sous le prénom, sur le bureau
     github: "oscar-bit08"
   },
 
@@ -70,7 +69,7 @@ window.PORTFOLIO = {
       illustration: "bienvenue",
       titre: "Bienvenue sur mon portfolio",
       paragraphes: [
-        "Je m'appelle <strong>Oscar Bonant</strong>, j'ai 18 ans et je suis étudiant en <strong>BTS SIO</strong> (Services Informatiques aux Organisations) à NEXA Lyon, en <strong>alternance chez TDI</strong> à Bron.",
+        "Je m'appelle <strong>Oscar Bonant</strong>, j'ai 18 ans et je suis étudiant en <strong>BTS SIO</strong> (Services Informatiques aux Organisations) à NEXA Lyon, en <strong>alternance chez TDI-Group</strong>.",
         "Ce portfolio fonctionne comme un petit système d'exploitation. Avant d'arriver sur le bureau, je vous propose une configuration express en 5 étapes pour faire connaissance."
       ],
       bouton: "Commencer"
@@ -106,7 +105,7 @@ window.PORTFOLIO = {
           periode: "Depuis sept. 2026",
           details: [
             "Formation aux métiers de l'informatique : support et maintenance, administration des systèmes, développement et gestion des données.",
-            "Je prépare ce BTS en alternance chez TDI, à Bron."
+            "Je prépare ce BTS en alternance chez TDI-Group."
           ]
         },
         {
@@ -137,10 +136,10 @@ window.PORTFOLIO = {
       paragraphes: ["Une alternance en cours, après deux stages d'observation qui ont confirmé mon orientation vers l'informatique."],
       liste: [
         {
-          titre: "TDI",
-          sousTitre: "Alternance BTS SIO · Bron (69500)",
+          titre: "TDI-Group",
+          sousTitre: "Alternance BTS SIO",
           periode: "Depuis 2026",
-          // À COMPLÉTER : ajouter ici tes missions concrètes chez TDI
+          // À COMPLÉTER : ajouter ici tes missions concrètes chez TDI-Group
           details: [
             "Éditeur-intégrateur spécialisé dans la gestion d'expéditions, qui relie les entreprises à plus de 250 transporteurs.",
             "J'y prépare mon BTS SIO en alternance."
@@ -172,10 +171,10 @@ window.PORTFOLIO = {
       illustration: "projet",
       titre: "Mon projet professionnel",
       paragraphes: [
-        "Je prépare mon <strong>BTS SIO en alternance chez TDI</strong>, à Bron. Mon objectif : <strong>travailler dans le secteur de l'intelligence artificielle</strong>. Pour y arriver, je consolide mes bases en <strong>support informatique</strong> et en <strong>traitement de données</strong>, en mettant en pratique en entreprise ce que j'apprends en formation."
+        "Je prépare mon <strong>BTS SIO en alternance chez TDI-Group</strong>. Mon objectif : <strong>travailler dans le secteur de l'intelligence artificielle</strong>. Pour y arriver, je consolide mes bases en <strong>support informatique</strong> et en <strong>traitement de données</strong>, en mettant en pratique en entreprise ce que j'apprends en formation."
       ],
       cartes: [
-        { icone: "briefcase", titre: "Aujourd'hui",          texte: "BTS SIO à NEXA Lyon, en alternance chez TDI (Bron), éditeur de solutions de gestion d'expéditions." },
+        { icone: "briefcase", titre: "Aujourd'hui",          texte: "BTS SIO à NEXA Lyon, en alternance chez TDI-Group, éditeur de solutions de gestion d'expéditions." },
         { icone: "target",    titre: "Ce que j'apporte",     texte: "Une première expérience terrain : assistance niveau 1-2 et déploiement de plus de 15 postes Windows, en stage à la mairie de Caluire." },
         { icone: "sparkles",  titre: "Ce que je développe",  texte: "Claude Code et la création d'agents IA, dans la continuité de mon objectif : travailler dans l'IA." }
       ],
