@@ -107,10 +107,10 @@
           <div class="id-card__bars"><i style="--w:86%"></i><i style="--w:62%"></i><i style="--w:74%"></i></div>
           <div class="id-card__foot">${OS.icon("mapPin", { taille: 13 })} ${OS.esc(P.ville.replace(/\s*\(.*\)/, ""))} · ${OS.esc(P.region)}</div>
         </div>
-        ${pastille("target", "Rigoureux", 0, 12, 0)}
-        ${pastille("rocket", "Autonome", 66, 4, .9)}
-        ${pastille("globe", "Anglais B2", 62, 88, 1.6)}
-        ${pastille("sparkles", "Curieux", 2, 86, .4)}
+        ${pastille("globe", "Anglais B2", 0, 12, 0)}
+        ${pastille("server", "15+ postes", 66, 4, .9)}
+        ${pastille("folder", "9 projets", 62, 94, 1.6)}
+        ${pastille("briefcase", "Revente Vinted", 2, 94, .4)}
       </div>`;
     },
 
@@ -290,8 +290,8 @@
           </g>
         </svg>
         ${pastille("wrench", "Support informatique", 0, 6, 0)}
-        ${pastille("server", "Admin système", 0, 30, .6, true)}
-        ${pastille("chart", "Données & Power BI", 38, 88, 1.2)}
+        ${pastille("terminal", "Claude Code", 0, 30, .6, true)}
+        ${pastille("sparkles", "Agents IA", 46, 88, 1.2)}
       </div>`;
     }
   };

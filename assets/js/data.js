@@ -82,13 +82,15 @@ window.PORTFOLIO = {
       titre: "Qui suis-je ?",
       paragraphes: [
         "Passionné d'informatique et toujours à jour sur l'actualité tech, j'aime comprendre comment les choses fonctionnent… puis les construire moi-même.",
-        "Je me forme en continu à travers mes projets personnels : bots Python, serveur cloud sous Docker, applications web. En ce moment, je m'autoforme sur <strong>Power BI</strong> et l'<strong>administration système</strong>."
+        "Je me forme en continu à travers mes projets personnels : bots Python, serveur cloud sous Docker, applications web. En ce moment, je me forme à <strong>Claude Code</strong> et à la <strong>création d'agents IA</strong>."
       ],
+      // Uniquement des FAITS vérifiables (pas de qualités du type « rigoureux »).
+      // Penser à mettre à jour « 9 projets » si une réalisation est ajoutée.
       atouts: [
-        { icone: "target",   titre: "Rigoureux",       texte: "Méthode et sens du détail" },
-        { icone: "rocket",   titre: "Autonome",        texte: "J'apprends en construisant mes projets" },
-        { icone: "globe",    titre: "Anglais B2",      texte: "À l'aise à l'écrit comme à l'oral" },
-        { icone: "sparkles", titre: "Esprit commerçant", texte: "Achat-revente sur Vinted" }
+        { icone: "globe",     titre: "Anglais B2",           texte: "À l'aise à l'écrit comme à l'oral" },
+        { icone: "server",    titre: "15+ postes déployés",  texte: "Windows 10/11, en stage à la mairie de Caluire" },
+        { icone: "folder",    titre: "9 projets réalisés",   texte: "Python, web, Docker : voir l'appli Réalisations" },
+        { icone: "briefcase", titre: "Achat-revente en ligne", texte: "Activité personnelle sur Vinted" }
       ]
     },
     {
@@ -122,7 +124,7 @@ window.PORTFOLIO = {
           periode: "Oct. 2023 – juil. 2025",
           details: [
             "Initiation à la création numérique : programmation et modélisation 3D.",
-            "Une expérience qui m'a appris la logique et l'autonomie sur des logiciels professionnels."
+            "Près de deux ans de pratique (oct. 2023 – juil. 2025) sur des logiciels professionnels de programmation et de 3D."
           ]
         }
       ]
@@ -174,8 +176,8 @@ window.PORTFOLIO = {
       ],
       cartes: [
         { icone: "briefcase", titre: "Aujourd'hui",          texte: "BTS SIO à NEXA Lyon, en alternance chez TDI (Bron), éditeur de solutions de gestion d'expéditions." },
-        { icone: "target",    titre: "Ce que j'apporte",     texte: "Rigueur, autonomie et une première expérience terrain : assistance niveau 1-2 et déploiement de plus de 15 postes." },
-        { icone: "chart",     titre: "Ce que je développe",  texte: "Power BI, administration système Linux/Windows, réseau et Active Directory." }
+        { icone: "target",    titre: "Ce que j'apporte",     texte: "Une première expérience terrain : assistance niveau 1-2 et déploiement de plus de 15 postes Windows, en stage à la mairie de Caluire." },
+        { icone: "sparkles",  titre: "Ce que je développe",  texte: "Claude Code et la création d'agents IA, dans la continuité de mon objectif : travailler dans l'IA." }
       ],
       bouton: "Accéder au bureau"
     }
@@ -393,7 +395,7 @@ window.PORTFOLIO = {
         maitrise: [
           "Rédiger et mettre en forme des documents (Word) et des présentations (PowerPoint)",
           "Organiser et calculer des données dans Excel",
-          "Visualiser des données avec Power BI (autoformation en cours)",
+          "Visualiser des données avec Power BI",
           "Concevoir un système de notation par moyenne pondérée",
           "Croiser des données réelles : prix au m², transports, espaces verts"
         ],
@@ -406,16 +408,18 @@ window.PORTFOLIO = {
         categorie: "data",
         icone: "sparkles",
         couleur: "#f472b6",
-        resume: "Utilisation avancée des IA génératives… et veille sur leur impact.",
+        resume: "Utilisation avancée des IA génératives, Claude Code et agents IA… et veille sur leur impact.",
         niveau: 4,
         maitrise: [
           "Rédiger des consignes (prompts) précises pour obtenir un résultat exploitable",
+          "Développer avec Claude Code (en cours d'apprentissage)",
+          "Créer des agents IA (en cours d'apprentissage)",
           "Utiliser l'IA comme assistant de code, de recherche et de synthèse",
           "Générer des images et des vidéos (Sora, NanoBanana)",
           "Synthétiser des sources documentaires avec NotebookLM",
           "Analyser l'impact de l'IA sur le marché du logiciel (voir ma veille)"
         ],
-        outils: ["Claude", "ChatGPT", "Gemini", "Sora", "NotebookLM", "NanoBanana"],
+        outils: ["Claude", "Claude Code", "ChatGPT", "Gemini", "Sora", "NotebookLM", "NanoBanana"],
         projets: ["oscar-os"],
         veille: true
       },
