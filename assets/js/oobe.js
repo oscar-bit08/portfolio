@@ -6,7 +6,7 @@
    Ici, il sert à présenter Oscar en 5 étapes.
 
    Contient trois parties :
-     1. OS.boot.run()      → écran noir avec logo et roue de chargement
+     1. OS.boot.run()      → écran noir avec logo et barre de chargement
      2. OS.oobe.lancer()   → les 5 slides (Bienvenue, Profil, Formation,
                              Expériences, Projet pro)
      3. OS.hello()         → transition « Préparation de votre bureau… »
@@ -20,16 +20,32 @@
   /* ===================================================================
      1. ÉCRAN DE DÉMARRAGE
      =================================================================== */
+  /**
+   * (Re)lance le remplissage d'une barre de chargement pour qu'elle soit
+   * pleine au bout de « ms » millisecondes (voir .loader dans base.css).
+   * Retirer puis remettre la classe fait repartir l'animation de zéro.
+   */
+  function lancerChargement(selecteur, ms) {
+    const barre = OS.$(selecteur);
+    if (!barre) return;
+    barre.style.setProperty("--duree", `${ms}ms`);
+    barre.classList.remove("is-loading");
+    void barre.offsetWidth;                // force le navigateur à prendre en compte l'arrêt
+    barre.classList.add("is-loading");
+  }
+
   OS.boot = {
     /**
-     * Affiche le logo et la roue de chargement, puis disparaît.
+     * Affiche le logo et la barre de chargement, puis disparaît.
      * @param {object} opts  { court: true } pour un redémarrage plus rapide
      */
     async run({ court = false } = {}) {
       const boot = OS.$("#boot");
+      const duree = OS.reduceMotion ? 300 : court ? 1500 : 2300;
       boot.hidden = false;
       boot.classList.add("is-visible");
-      await OS.sleep(OS.reduceMotion ? 300 : court ? 1500 : 2300);
+      lancerChargement("#boot-loader", duree);   // la barre est pleine quand l'écran s'efface
+      await OS.sleep(duree);
       await OS.hideScreen(boot, 500);
     }
   };
@@ -129,7 +145,7 @@
       });
     }
 
-    // Boutons : « Retour » caché sur la 1re étape ; texte du bouton principal
+    // Boutons : « Précédent » caché sur la 1re étape ; texte du bouton principal
     el.prec.hidden = index === 0;
     el.suiv.textContent = s.bouton || "Suivant";
 
@@ -181,6 +197,8 @@
     await OS.hideScreen(el.ecran, 350);
     el.carte.getAnimations().forEach((a) => a.cancel());
     fermeture = false;
+    // De retour sur le bureau : le fond d'écran peut de nouveau suivre la souris
+    if (depuisBureau) OS.wallpaper.parallaxe(true);
     fin({ passe });
   }
 
@@ -199,6 +217,10 @@
   function lancer(opts = {}) {
     depuisBureau = Boolean(opts.depuisBureau);
     el.ecran.classList.toggle("oobe--over-desktop", depuisBureau);
+    // OPTIMISATION : derrière l'écran flouté, inutile de faire bouger le
+    // fond d'écran (le flou devrait être recalculé à chaque image)
+    OS.wallpaper.parallaxe(false);
+    OS.dock?.fermer();
     index = 0;
     rendre(1);
     OS.showScreen(el.ecran, 500).then(() => el.suiv.focus({ preventScroll: true }));
@@ -254,6 +276,8 @@
       ? ["Tout est prêt, bonne visite !"]
       : ["Bonjour.", "Préparation de votre bureau…", "Tout est prêt, bonne visite !"];
 
+    // La barre se remplit pendant toute la durée des messages
+    lancerChargement("#hello-loader", OS.reduceMotion ? 500 : 450 + messages.length * 1400);
     await OS.showScreen(ecran, 450);
     for (const message of messages) {
       texte.textContent = message;

@@ -170,7 +170,7 @@ window.PORTFOLIO = {
       illustration: "projet",
       titre: "Mon projet professionnel",
       paragraphes: [
-        "Je prépare mon <strong>BTS SIO en alternance chez TDI</strong>, à Bron. Mon objectif : progresser dans le <strong>support informatique</strong> et le <strong>traitement de données</strong> en mettant en pratique, en entreprise, ce que j'apprends en formation."
+        "Je prépare mon <strong>BTS SIO en alternance chez TDI</strong>, à Bron. Mon objectif : <strong>travailler dans le secteur de l'intelligence artificielle</strong>. Pour y arriver, je consolide mes bases en <strong>support informatique</strong> et en <strong>traitement de données</strong>, en mettant en pratique en entreprise ce que j'apprends en formation."
       ],
       cartes: [
         { icone: "briefcase", titre: "Aujourd'hui",          texte: "BTS SIO à NEXA Lyon, en alternance chez TDI (Bron), éditeur de solutions de gestion d'expéditions." },
@@ -192,23 +192,26 @@ window.PORTFOLIO = {
   },
 
   /* -------------------------------------------------------------------
-     4. COMPÉTENCES (application « Compétences », style Paramètres Windows)
+     4. COMPÉTENCES (application « Compétences », affichée en graphe)
      -------------------------------------------------------------------
      Champs d'une compétence :
        id, nom, categorie (id d'une catégorie), icone (voir icons.js),
-       couleur (couleur de l'icône), resume (une phrase),
-       niveau (1 à 4 — À AJUSTER selon ton ressenti),
+       couleur (couleur du point dans le graphe : une par compétence), resume (une phrase),
+       niveau (1 à 4 — À AJUSTER selon ton ressenti ; taille du point),
        maitrise  → ce que je sais faire (liste),
        outils    → technologies associées (liste),
        projets   → id des réalisations où la compétence a servi,
        contextes → expériences / formations liées (texte libre),
        veille    → true pour afficher un lien vers l'appli Veille
+       logo      → logo du logiciel affiché dans le point du graphe (voir
+                   MARQUES dans icons.js) ; sinon c'est l'icône qui est affichée
+     Catégories : nom (légende), court (étiquette posée sur le graphe)
      ------------------------------------------------------------------- */
   competences: {
     categories: [
-      { id: "dev",  nom: "Développement" },
-      { id: "sys",  nom: "Systèmes, réseaux & support" },
-      { id: "data", nom: "Données, IA & création" }
+      { id: "dev",  nom: "Développement",               court: "Développement" },
+      { id: "sys",  nom: "Systèmes, réseaux & support", court: "Systèmes & réseaux" },
+      { id: "data", nom: "Données, IA & création",     court: "Données & IA" }
     ],
     liste: [
       {
@@ -216,6 +219,7 @@ window.PORTFOLIO = {
         nom: "Python",
         categorie: "dev",
         icone: "python",
+        logo: "python",
         couleur: "#60a5fa",
         resume: "Mon langage de prédilection : scripts, interfaces graphiques, web et automatisation.",
         niveau: 4,
@@ -256,6 +260,7 @@ window.PORTFOLIO = {
         nom: "Git & environnement de dev",
         categorie: "dev",
         icone: "git",
+        logo: "git",
         couleur: "#f87171",
         resume: "Versionner, documenter et partager mon code proprement.",
         niveau: 2,
@@ -347,7 +352,8 @@ window.PORTFOLIO = {
         nom: "Docker & conteneurs",
         categorie: "sys",
         icone: "layers",
-        couleur: "#38bdf8",
+        logo: "docker",
+        couleur: "#818cf8",
         resume: "Déployer des services isolés et reproductibles grâce aux conteneurs.",
         niveau: 2,
         maitrise: [
@@ -381,7 +387,7 @@ window.PORTFOLIO = {
         nom: "Bureautique & données",
         categorie: "data",
         icone: "chart",
-        couleur: "#facc15",
+        couleur: "#a3e635",
         resume: "Traiter, calculer et présenter des données pour aider à la décision.",
         niveau: 2,
         maitrise: [
@@ -418,7 +424,8 @@ window.PORTFOLIO = {
         nom: "Modélisation 3D",
         categorie: "data",
         icone: "cube",
-        couleur: "#a78bfa",
+        logo: "blender",            // seul logiciel de 3D que je maîtrise
+        couleur: "#f0abfc",
         resume: "Création numérique et modélisation 3D.",
         niveau: 2,
         maitrise: [
@@ -859,7 +866,8 @@ window.PORTFOLIO = {
      7. VEILLE TECHNOLOGIQUE (terminal)
      -------------------------------------------------------------------
      vitesse  → nombre de caractères écrits par seconde
-     erreur   → petit message « erreur de mise en veille » avant le terminal
+     erreur   → message « échec de la mise en veille » avant le terminal
+     lectureErreur → secondes laissées pour lire ce message
      logs     → lignes de « démarrage » affichées très vite
      commande → commande tapée avant l'affichage de l'article
      sections → sommaire affiché à droite (une couche de l'illustration
@@ -872,21 +880,30 @@ window.PORTFOLIO = {
     fichier: "logiciel_jetable.md",
     vitesse: 170,
     // Message affiché sur écran noir entre l'extinction et le terminal.
-    // type : "info" (gris), "erreur" (rouge, affichée d'un coup), "action" (blanc)
+    // type : "titre" (gris foncé), "info" (gris), "erreur" (rouge, affichée
+    // d'un coup), "detail" (gris, d'un coup), "action" (blanc),
+    // "ok" (blanc + OK orange), "note" (encadré final, la phrase à lire)
     erreur: [
-      { type: "info",   texte: "Mise en veille de la session graphique…" },
-      { type: "erreur", texte: "[ ERREUR ] Erreur lors de la mise en veille." },
-      { type: "action", texte: "> Ouverture du terminal…" }
+      { type: "titre",  texte: "oscar-os · gestionnaire d'alimentation" },
+      { type: "info",   texte: "> Mise en veille de la session graphique…" },
+      { type: "erreur", texte: "[ ERREUR ] Échec de la mise en veille (code 0x56 : VEILLE_DETOURNEE)" },
+      { type: "detail", texte: "           La demande de mise en veille a été interceptée par le système." },
+      { type: "action", texte: "> Déviation vers le dossier « veille informatique »…" },
+      { type: "ok",     texte: "> Montage de ~/veille-informatique ..................... OK" },
+      { type: "action", texte: "> Ouverture du terminal de lecture…" },
+      { type: "note",   texte: "Ceci est une présentation à propos d'un sujet qui m'a marqué lors de ma veille informatique." }
     ],
+    // Temps laissé pour lire l'encadré avant l'ouverture automatique (en secondes)
+    lectureErreur: 6,
     logs: [
       "OSCAR-OS BIOS v2.6 — reprise en mode texte",
       "[ OK ] Session graphique sauvegardée",
       "[ OK ] Passage en mode terminal (TTY1)",
-      "[ OK ] Montage de /home/oscar/veille",
+      "[ OK ] Dossier ~/veille-informatique ouvert",
       "[ OK ] Chargement du module analyse_technologique",
-      "[ .. ] Ouverture du dossier de veille…"
+      "[ .. ] Lecture de la présentation…"
     ],
-    commande: "cat ~/veille/logiciel_jetable.md",
+    commande: "cat ~/veille-informatique/logiciel_jetable.md",
     logsRedemarrage: [
       "[ OK ] Fermeture du dossier de veille",
       "[ OK ] Arrêt du terminal TTY1",

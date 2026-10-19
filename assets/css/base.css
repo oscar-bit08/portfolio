@@ -4,7 +4,7 @@
    1. Variables (couleurs, polices, tailles) : tout le thème se règle ici
    2. Réinitialisation et styles de base
    3. Effet « verre liquide » (.glass)
-   4. Boutons, pastilles, roue de chargement
+   4. Boutons, pastilles, barre de chargement
    5. Écrans (.screen) et accessibilité
    ===================================================================== */
 
@@ -40,7 +40,7 @@
 
   /* Dimensions du bureau */
   --topbar-h: 34px;
-  --dock-space: 100px;    /* hauteur réservée au dock en bas */
+  --bottom-space: 26px;   /* bande libre en bas de l'écran : la poignée du dock y vit */
 
   /* Courbes d'animation */
   --ease-out: cubic-bezier(.2, .8, .2, 1);
@@ -240,42 +240,54 @@ svg { flex-shrink: 0; }
   border: 1px solid rgba(255, 255, 255, .12);
 }
 
-/* Roue de chargement façon Windows : 5 points qui tournent en se suivant */
-.spinner {
+/* Barre de chargement : un fin rail en verre qui se remplit d'une lumière
+   bleue (le bleu de l'anneau du logo), parcourue par un reflet.
+     - la durée du remplissage (--duree) est réglée par oobe.js pour
+       correspondre au temps réel de l'écran (démarrage, transition) ;
+     - le remplissage avance par à-coups, comme un vrai chargement ;
+     - seuls transform et opacity sont animés (calcul par la carte graphique). */
+.loader {
   position: relative;
-  width: 46px;
-  height: 46px;
+  width: 168px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .14);
+  box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .1);
 }
-.spinner i {
+.loader--small { width: 132px; height: 3px; }
+.loader i {
   position: absolute;
   inset: 0;
-  animation: orbite 5.5s infinite;
-  animation-delay: calc(var(--k) * .24s);
-  opacity: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0a84ff, #4cc2ff 70%, #c7f0ff);
+  box-shadow: 0 0 8px rgba(76, 194, 255, .9);
+  transform: scaleX(0);
+  transform-origin: left;
 }
-.spinner i::before {
+/* Le remplissage ne démarre que lorsque oobe.js ajoute .is-loading */
+.loader.is-loading i { animation: charger var(--duree, 2s) linear forwards; }
+/* Reflet qui glisse le long du rail */
+.loader::after {
   content: "";
   position: absolute;
-  left: 50%;
   top: 0;
-  width: 6px;
-  height: 6px;
-  margin-left: -3px;
-  border-radius: 50%;
-  background: #fff;
+  bottom: 0;
+  left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+  transform: translateX(-100%);
+  animation: refletRail 1.4s ease-in-out infinite;
 }
-.spinner--small { width: 34px; height: 34px; }
-.spinner--small i::before { width: 5px; height: 5px; margin-left: -2.5px; }
-
-@keyframes orbite {
-  0%   { transform: rotate(225deg); opacity: 1; animation-timing-function: ease-out; }
-  7%   { transform: rotate(345deg); animation-timing-function: linear; }
-  30%  { transform: rotate(455deg); animation-timing-function: ease-in-out; }
-  39%  { transform: rotate(690deg); animation-timing-function: linear; }
-  70%  { transform: rotate(815deg); opacity: 1; animation-timing-function: ease-out; }
-  75%  { transform: rotate(945deg); animation-timing-function: ease-out; }
-  76%  { transform: rotate(945deg); opacity: 0; }
-  100% { transform: rotate(945deg); opacity: 0; }
+@keyframes charger {
+  0%   { transform: scaleX(0); }
+  20%  { transform: scaleX(.32); animation-timing-function: ease-out; }
+  45%  { transform: scaleX(.46); animation-timing-function: ease-in; }
+  70%  { transform: scaleX(.81); animation-timing-function: ease-out; }
+  100% { transform: scaleX(1); }
+}
+@keyframes refletRail {
+  to { transform: translateX(260%); }
 }
 
 /* ---------------------------------------------------------------------

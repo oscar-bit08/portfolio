@@ -1,8 +1,8 @@
 /* =====================================================================
    veille.css — MISE EN VEILLE + TERMINAL DE VEILLE TECHNOLOGIQUE
    =====================================================================
-   1. Écran « Mise en veille… »
-   2. Effets d'écran cathodique (extinction / allumage)
+   1. Extinction progressive de l'écran
+   2. Effet « glitch » (ouverture / fermeture du terminal)
    2 bis. Message d'erreur (console brute avant le terminal)
    3. Cadre du terminal (inspiré de la 3e capture : noir, gris, orange)
    4. Textes écrits dans le terminal
@@ -25,42 +25,72 @@
 }
 
 /* ---------------------------------------------------------------------
-   1. MISE EN VEILLE
+   1. EXTINCTION PROGRESSIVE
+   ---------------------------------------------------------------------
+   Un voile noir recouvre l'écran en 0,9 s. La courbe « ease-in »
+   quadratique (l'opacité suit à peu près t²) le fait démarrer doucement
+   puis accélérer jusqu'au noir complet :
+     - le voile est plus sombre sur les bords (dégradé radial) : les
+       coins s'éteignent en premier ;
+     - un second calque noir uni (::after) termine l'extinction au centre.
+   Seule l'opacité est animée : c'est la carte graphique qui travaille.
    --------------------------------------------------------------------- */
-.shutdown {
+.extinction {
+  position: absolute;
+  inset: 0;
   z-index: 8800;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  gap: 14px;
-  background: rgba(2, 8, 20, .55);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  background: radial-gradient(120% 95% at 50% 46%, rgba(0, 0, 0, .55) 20%, #000 78%);
+  opacity: 0;
 }
-.shutdown .spinner { margin-bottom: 18px; }
-.shutdown__title { font-size: 26px; font-weight: 300; }
-.shutdown__sub { font-size: 14px; color: var(--text-muted); }
+.extinction::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+}
+.extinction.is-on { animation: eteindre .9s cubic-bezier(.55, .085, .68, .53) forwards; }
+.extinction.is-on::after { animation: eteindreCentre .9s cubic-bezier(.55, .085, .68, .53) forwards; }
+@keyframes eteindre { to { opacity: 1; } }
+@keyframes eteindreCentre {
+  0%, 45% { opacity: 0; }
+  100%    { opacity: 1; }
+}
 
 /* ---------------------------------------------------------------------
-   2. EFFETS CRT (vieux moniteur cathodique)
+   2. GLITCH (ouverture et fermeture du terminal)
    ---------------------------------------------------------------------
-   Extinction : l'image s'écrase en une ligne horizontale très lumineuse,
-   puis en un point, puis disparaît. L'allumage fait l'inverse.
+   Quelques images seulement, sans transition entre elles (steps) :
+     - clip-path: inset() ne laisse voir qu'une bande horizontale ;
+     - translateX décale l'image de quelques pixels ;
+     - deux ombres rouge / cyan décalées imitent un signal qui « bave ».
+   Les décalages restent petits (6 px au maximum) : l'effet doit rester
+   discret, pas spectaculaire.
    --------------------------------------------------------------------- */
-.crt-off { animation: crtOff .62s cubic-bezier(.7, 0, .3, 1) forwards; }
-@keyframes crtOff {
-  0%   { transform: scale(1, 1);      filter: brightness(1); opacity: 1; }
-  45%  { transform: scale(1, .005);   filter: brightness(4); opacity: 1; }
-  75%  { transform: scale(.3, .005);  filter: brightness(8); opacity: 1; }
-  100% { transform: scale(0, 0);      filter: brightness(10); opacity: 0; }
+.terminal.glitch-in  { animation: glitchEntree .42s steps(1, end) both; }
+.terminal.glitch-out { animation: glitchSortie .38s steps(1, end) both; }
+
+@keyframes glitchEntree {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; clip-path: inset(44% 0 48% 0); transform: translateX(-6px); }
+  24%  { clip-path: inset(14% 0 72% 0); transform: translateX(5px); }
+  36%  { clip-path: inset(0 0 0 0); transform: translateX(-3px); opacity: .85;
+         filter: drop-shadow(2px 0 0 rgba(255, 60, 60, .5)) drop-shadow(-2px 0 0 rgba(60, 210, 255, .5)); }
+  50%  { clip-path: inset(58% 0 30% 0); transform: translateX(3px); opacity: 1; filter: none; }
+  62%  { clip-path: inset(0 0 0 0); transform: translateX(-1px);
+         filter: drop-shadow(1px 0 0 rgba(255, 60, 60, .4)) drop-shadow(-1px 0 0 rgba(60, 210, 255, .4)); }
+  76%, 100% { opacity: 1; clip-path: inset(0 0 0 0); transform: none; filter: none; }
 }
-.crt-on { animation: crtOn .7s cubic-bezier(.2, .7, .3, 1) forwards; }
-@keyframes crtOn {
-  0%   { transform: scale(0, .004);   filter: brightness(8); opacity: 0; }
-  15%  { opacity: 1; }
-  40%  { transform: scale(1, .004);   filter: brightness(5); }
-  75%  { transform: scale(1, 1);      filter: brightness(1.8); }
-  100% { transform: scale(1, 1);      filter: brightness(1); opacity: 1; }
+@keyframes glitchSortie {
+  0%   { opacity: 1; clip-path: inset(0 0 0 0); transform: none; }
+  14%  { transform: translateX(4px);
+         filter: drop-shadow(2px 0 0 rgba(255, 60, 60, .5)) drop-shadow(-2px 0 0 rgba(60, 210, 255, .5)); }
+  28%  { clip-path: inset(26% 0 40% 0); transform: translateX(-6px); filter: none; }
+  42%  { clip-path: inset(0 0 0 0); transform: translateX(2px); opacity: .8; }
+  56%  { clip-path: inset(52% 0 36% 0); transform: translateX(-3px); opacity: 1; }
+  70%  { clip-path: inset(47% 0 51% 0); transform: none; }
+  84%  { clip-path: inset(49.6% 0 49.6% 0); opacity: .6; }
+  100% { clip-path: inset(50% 0 50% 0); opacity: 0; }
 }
 
 /* ---------------------------------------------------------------------
@@ -81,15 +111,76 @@
   font-family: var(--font-mono);
   font-size: 14px;
   line-height: 1.8;
+  overflow-y: auto;
 }
+.veille-erreur__line { white-space: pre-wrap; }   /* garde l'alignement des espaces */
+.veille-erreur__line--titre  { color: #5c5c5c; margin-bottom: 10px; }
 .veille-erreur__line--info   { color: #8a8a8a; }
 .veille-erreur__line--erreur { color: #ff5f56; font-weight: 700; }
+.veille-erreur__line--detail { color: #8a8a8a; }
 .veille-erreur__line--action { color: #f2f2f2; }
-/* Curseur bloc qui clignote pendant « l'ouverture du terminal » */
-.veille-erreur__line.is-waiting::after {
-  content: "▋";
-  margin-left: 4px;
-  animation: clignoter 1s steps(1) infinite;
+.veille-erreur__line--ok     { color: #f2f2f2; }
+.veille-erreur__ok { color: #ff6a1a; font-weight: 700; }
+
+/* Encadré final : la phrase qui présente le sujet. Plus grand, en blanc,
+   avec un filet orange (la couleur du terminal qui va s'ouvrir). */
+.veille-erreur__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  max-width: 68ch;
+  margin-top: 26px;
+  padding: 16px 20px;
+  border: 1px solid #2c2c2c;
+  border-left: 3px solid #ff6a1a;
+  background: #0b0b0b;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #fff;
+  animation: apparaitreNote .5s ease-out both;
+}
+.veille-erreur__badge {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 1.5px solid #ff6a1a;
+  color: #ff6a1a;
+  font-weight: 700;
+  font-size: 13px;
+}
+@keyframes apparaitreNote { from { opacity: 0; transform: translateY(6px); } }
+
+/* Compte à rebours sous l'encadré : une barre qui se vide */
+.veille-erreur__next {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: #7a7a7a;
+  animation: apparaitreNote .5s .2s ease-out both;
+}
+.veille-erreur__next b { color: #d4d4d4; font-weight: 500; }
+.veille-erreur__bar {
+  width: 120px;
+  height: 2px;
+  background: #222;
+  overflow: hidden;
+}
+.veille-erreur__bar i {
+  display: block;
+  height: 100%;
+  background: #ff6a1a;
+  transform-origin: left;
+  animation: vider linear forwards;    /* durée fixée par veille.js */
+}
+@keyframes vider {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
 }
 
 /* ---------------------------------------------------------------------

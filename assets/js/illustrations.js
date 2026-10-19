@@ -23,9 +23,10 @@
   /**
    * Fabrique une pastille flottante.
    * x / y = position en % dans la scène ; d = décalage de l'animation.
+   * secondaire = true : pastille masquée sur petit écran (manque de place).
    */
-  const pastille = (icone, texte, x, y, d = 0) =>
-    `<span class="illu__chip" style="--x:${x}%;--y:${y}%;--d:${d}s">${OS.icon(icone, { taille: 15 })}${OS.esc(texte)}</span>`;
+  const pastille = (icone, texte, x, y, d = 0, secondaire = false) =>
+    `<span class="illu__chip${secondaire ? " illu__chip--secondaire" : ""}" style="--x:${x}%;--y:${y}%;--d:${d}s">${OS.icon(icone, { taille: 15 })}${OS.esc(texte)}</span>`;
 
   OS.illustrations = {
 
@@ -214,44 +215,83 @@
     },
 
     /* ---------------------------------------------------------------
-       5. PROJET PRO : fusée qui suit une trajectoire à étapes
+       5. PROJET PRO : un escalier de progression
+       ---------------------------------------------------------------
+       Trois marches en verre, de plus en plus hautes, qui montent l'une
+       après l'autre : le Bac (franchi), le BTS SIO en alternance (l'étape
+       en cours, qui pulse) et l'objectif (le drapeau).
+       Chaque marche est dessinée en « 2,5D » : une face avant, un dessus
+       et un côté décalés de quelques pixels. Les textes sont écrits SUR
+       la face avant : ils ne peuvent pas chevaucher le reste.
        --------------------------------------------------------------- */
     projet() {
       const u = uid();
+      const SOL = 196;              // ligne du sol
+      const L = 62;                 // largeur d'une marche
+      const P = { x: 10, y: -8 };   // décalage de la profondeur (dessus et côté)
+      const marches = [
+        { x: 16,  haut: 152, couleur: "#22c55e", titre: "Bac",      lignes: ["Obtenu"] },
+        { x: 89,  haut: 112, couleur: "#38bdf8", titre: "BTS SIO",  lignes: ["Alternance", "chez TDI"] },
+        { x: 162, haut: 72,  couleur: "#f59e0b", titre: "Objectif", lignes: ["Travailler", "dans l'IA"] }
+      ];
+
+      const dessinerMarche = (m, i) => {
+        const d = `${m.x},${m.haut}`;
+        const dessus = `${d} ${m.x + P.x},${m.haut + P.y} ${m.x + L + P.x},${m.haut + P.y} ${m.x + L},${m.haut}`;
+        const cote = `${m.x + L},${m.haut} ${m.x + L + P.x},${m.haut + P.y} ${m.x + L + P.x},${SOL + P.y} ${m.x + L},${SOL}`;
+        const cx = m.x + L / 2;
+        return `
+          <g class="illu__step" style="--i:${i}">
+            <polygon points="${cote}" fill="${m.couleur}" fill-opacity=".22" stroke="#fff" stroke-opacity=".2"/>
+            <polygon points="${dessus}" fill="${m.couleur}" fill-opacity=".55" stroke="#fff" stroke-opacity=".45"/>
+            <rect x="${m.x}" y="${m.haut}" width="${L}" height="${SOL - m.haut}" fill="url(#${u}-m${i})" stroke="#fff" stroke-opacity=".35"/>
+            <text x="${cx}" y="${m.haut + 18}" text-anchor="middle" font-size="11" font-weight="700">${m.titre}</text>
+            ${m.lignes.map((t, k) => `<text x="${cx}" y="${m.haut + 31 + k * 11}" text-anchor="middle" font-size="9" opacity=".78">${t}</text>`).join("")}
+          </g>`;
+      };
+
+      // Repères posés sur chaque marche (centre du dessus)
+      const repere = (m) => ({ x: m.x + L / 2 + P.x / 2, y: m.haut + P.y / 2 });
+      const [r1, r2, r3] = marches.map(repere);
+
       return `
       <div class="illu illu--projet">
         <div class="illu__halo illu__halo--orange"></div>
         <svg class="illu__main" viewBox="0 0 240 240">
           <defs>
-            <linearGradient id="${u}-fusee" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cbd5e1"/>
-            </linearGradient>
-            <linearGradient id="${u}-flamme" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stop-color="#fde047"/><stop offset="1" stop-color="#f97316" stop-opacity="0"/>
-            </linearGradient>
+            ${marches.map((m, i) => `
+              <linearGradient id="${u}-m${i}" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stop-color="${m.couleur}" stop-opacity=".5"/>
+                <stop offset="1" stop-color="${m.couleur}" stop-opacity=".1"/>
+              </linearGradient>`).join("")}
           </defs>
-          <!-- Trajectoire en pointillés -->
-          <path class="illu__path" d="M26 206C70 200 86 160 112 134S170 72 196 40" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="2.5" stroke-dasharray="2 9" stroke-linecap="round"/>
-          <!-- Étapes -->
-          <g font-family="Geist, system-ui, sans-serif" font-size="11" font-weight="600" fill="#fff">
-            <circle cx="40" cy="203" r="7" fill="#22c55e" stroke="#fff" stroke-width="2"/>
-            <text x="52" y="222">Bac</text>
-            <circle cx="112" cy="134" r="7" fill="#38bdf8" stroke="#fff" stroke-width="2"/>
-            <text x="124" y="150">BTS SIO</text>
-            <!-- L'étape en cours est portée par la fusée -->
-            <text x="172" y="20" text-anchor="end" fill="#fdba74" font-size="12">Alternance TDI →</text>
+          <!-- Ombre au sol -->
+          <ellipse cx="124" cy="${SOL + 6}" rx="110" ry="7" fill="#020617" opacity=".3"/>
+          <g font-family="Geist, system-ui, sans-serif" fill="#fff">
+            ${marches.map(dessinerMarche).join("")}
           </g>
-          <!-- Fusée -->
-          <g class="illu__rocket" transform="translate(196 40) rotate(45)">
-            <path d="M-6 26 0 52 6 26z" fill="url(#${u}-flamme)"/>
-            <path d="M0-30C12-18 14 0 12 22H-12C-14 0-12-18 0-30z" fill="url(#${u}-fusee)"/>
-            <circle cx="0" cy="-4" r="6" fill="#38bdf8" stroke="#1e3a8a" stroke-width="2"/>
-            <path d="M-12 10-22 26h10zM12 10l10 16H12z" fill="#f97316"/>
+          <!-- Courbe de progression en pointillés qui relie les étapes -->
+          <path class="illu__path" d="M${r1.x} ${r1.y - 14}Q${(r1.x + r2.x) / 2} ${r1.y - 30} ${r2.x} ${r2.y - 14}T${r3.x - 4} ${r3.y - 22}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="2" stroke-dasharray="2 7" stroke-linecap="round"/>
+          <!-- 1. Bac : étape franchie (coche verte) -->
+          <g class="illu__badge" style="--i:0">
+            <circle cx="${r1.x}" cy="${r1.y - 14}" r="9" fill="#22c55e" stroke="#fff" stroke-width="2"/>
+            <path d="m${r1.x - 4} ${r1.y - 14} 2.8 2.8 5-5.4" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <!-- 2. BTS SIO : étape en cours (un anneau pulse autour) -->
+          <g class="illu__badge" style="--i:1">
+            <circle class="illu__pulse" cx="${r2.x}" cy="${r2.y - 14}" r="9" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <circle cx="${r2.x}" cy="${r2.y - 14}" r="9" fill="#0ea5e9" stroke="#fff" stroke-width="2"/>
+            <circle cx="${r2.x}" cy="${r2.y - 14}" r="3.2" fill="#fff"/>
+          </g>
+          <!-- 3. Objectif : un drapeau planté sur la plus haute marche -->
+          <g class="illu__badge" style="--i:2">
+            <path d="M${r3.x} ${r3.y}V${r3.y - 42}" stroke="#e2e8f0" stroke-width="2.4" stroke-linecap="round"/>
+            <path class="illu__flag" d="M${r3.x + 1} ${r3.y - 42}c8-4 14 4 24 0v14c-10 4-16-4-24 0z" fill="#f97316" stroke="#fdba74" stroke-width="1"/>
           </g>
         </svg>
-        ${pastille("wrench", "Support informatique", 0, 8, 0)}
-        ${pastille("chart", "Données & Power BI", 46, 88, 1.2)}
-        ${pastille("server", "Admin système", 0, 52, .6)}
+        ${pastille("wrench", "Support informatique", 0, 6, 0)}
+        ${pastille("server", "Admin système", 0, 30, .6, true)}
+        ${pastille("chart", "Données & Power BI", 38, 88, 1.2)}
       </div>`;
     }
   };

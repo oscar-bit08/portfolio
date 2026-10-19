@@ -30,13 +30,14 @@
   let cascade = 0;              // décale légèrement chaque nouvelle fenêtre
 
   /* -------------------------------------------------------------------
-     ZONE UTILE : espace disponible entre la barre du haut et le dock
+     ZONE UTILE : espace disponible entre la barre du haut et le bas de
+     l'écran. Le dock étant escamotable, on ne réserve en bas qu'une
+     fine bande (--bottom-space) où vit la poignée du dock.
      ------------------------------------------------------------------- */
   function zoneUtile() {
     const styles = getComputedStyle(document.documentElement);
-    const haut = parseFloat(styles.getPropertyValue("--topbar-h")) || 36;
-    const dock = OS.$("#dock");
-    const bas = dock ? dock.offsetHeight + 24 : 96;
+    const haut = parseFloat(styles.getPropertyValue("--topbar-h")) || 34;
+    const bas = parseFloat(styles.getPropertyValue("--bottom-space")) || 26;
     return { x: 0, y: haut, largeur: window.innerWidth, hauteur: window.innerHeight - haut - bas };
   }
 
@@ -141,10 +142,13 @@
     };
   }
 
-  /** Rectangle de l'icône de l'application dans le dock (cible de réduction). */
+  /**
+   * Rectangle de l'icône de l'application dans le dock (cible de la
+   * réduction). Le dock peut être replié : desktop.js calcule la place
+   * que l'icône occupe quand il est déplié.
+   */
   function rectDock(id) {
-    const item = OS.$(`.dock__item[data-app="${id}"]`);
-    return item ? item.getBoundingClientRect() : null;
+    return OS.dock ? OS.dock.rectItem(id) : null;
   }
 
   function animerOuverture(el, rectOrigine, id) {
@@ -201,6 +205,8 @@
       etat.el.classList.add("is-minimized");
       focusSuivante();
     };
+    // Le dock se déplie un instant pour « accueillir » la fenêtre
+    OS.dock?.peek(1600);
     const cible = rectDock(id);
     if (OS.reduceMotion || !cible) return fin();
 
@@ -392,7 +398,13 @@
   /* -------------------------------------------------------------------
      REDIMENSIONNEMENT DU NAVIGATEUR : on garde les fenêtres visibles
      ------------------------------------------------------------------- */
+  let demande = 0;   // un seul recalcul par image, même si « resize » est émis en rafale
   window.addEventListener("resize", () => {
+    if (demande) return;
+    demande = requestAnimationFrame(() => { demande = 0; garderVisibles(); });
+  });
+
+  function garderVisibles() {
     fenetres.forEach((etat) => {
       if (etat.maximise) return appliquerMaximise(etat);
       const el = etat.el;
@@ -402,7 +414,7 @@
       el.style.left = `${OS.clamp(el.offsetLeft, 120 - el.offsetWidth, window.innerWidth - 120)}px`;
       el.style.top = `${OS.clamp(el.offsetTop, zone.y, window.innerHeight - 70)}px`;
     });
-  });
+  }
 
   // Exposition de l'API
   OS.wm = {

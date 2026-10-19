@@ -3,7 +3,7 @@
    =====================================================================
    Tous les modules sont chargés : on lance la séquence de démarrage.
    À CHAQUE chargement de la page, le visiteur repasse par :
-     1. l'écran de démarrage (logo + roue de chargement)
+     1. l'écran de démarrage (logo + barre de chargement)
      2. la présentation « À propos » en 5 étapes (façon installation Windows)
      3. la transition « Préparation de votre bureau… »
      4. le bureau, avec des icônes placées aléatoirement

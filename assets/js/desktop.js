@@ -4,11 +4,13 @@
    Gère tout ce qui est visible sur le bureau, en dehors des fenêtres :
      - les icônes des applications, placées ALÉATOIREMENT à chaque
        affichage du bureau, et déplaçables (souris ou doigt) ;
-     - le dock en bas (applications + indicateur « ouverte ») ;
+     - le dock ESCAMOTABLE en bas (caché par défaut, une poignée apparaît
+       quand la souris approche du bas de l'écran) ;
      - la barre du haut (menu système, application active, horloge) ;
-     - les ondulations d'eau quand on clique sur le fond d'écran.
+     - les ondulations quand on clique sur le fond d'écran.
 
    API : OS.desktop.show({ premiereFois }) · OS.desktop.shuffle()
+         OS.dock.peek(duree) · OS.dock.rectItem(id)
    ===================================================================== */
 
 (function () {
@@ -210,6 +212,8 @@
       const bouton = e.target.closest(".dock__item");
       if (!bouton) return;
       const id = bouton.dataset.app;
+      // Au doigt, il n'y a pas de « survol » : on replie le dock après le choix
+      if (e.pointerType === "touch") fermerBientot(250);
       if (id === "apropos") return OS.oobe.relancer();
 
       const etat = OS.wm.get(id);
@@ -223,6 +227,137 @@
     const marquer = (id, ouvert) => OS.$(`.dock__item[data-app="${id}"]`, el.dock)?.classList.toggle("is-running", ouvert);
     OS.on("wm:open", (id) => marquer(id, true));
     OS.on("wm:close", (id) => marquer(id, false));
+  }
+
+  /* -------------------------------------------------------------------
+     4 bis. DOCK ESCAMOTABLE
+     -------------------------------------------------------------------
+     Le dock est replié par défaut pour laisser toute la hauteur aux
+     fenêtres. Fonctionnement :
+       1. la souris approche du bas de l'écran, au centre (ZONE_POIGNEE)
+          → la classe .dock-near fait apparaître une petite barre ;
+       2. survoler cette barre (ou cliquer / toucher) → le dock se déplie ;
+       3. tant que la souris reste sur le dock, il reste ouvert ; dès
+          qu'elle s'en éloigne, il se replie après un court délai.
+     Au clavier, la poignée est un vrai bouton : Entrée déplie le dock et
+     place le focus sur la première application ; Échap le replie.
+     ------------------------------------------------------------------- */
+  const ZONE_POIGNEE = { hauteur: 90, demiLargeur: 230 };   // px
+  let dockOuvert = false;
+  let minuterieDock = 0;
+  let rectDockOuvert = null;   // position du dock déplié (mémorisée à l'ouverture)
+
+  /**
+   * Rectangle d'un élément du dock tel qu'il est QUAND LE DOCK EST DÉPLIÉ,
+   * même s'il est replié en ce moment : on retire le décalage vertical
+   * appliqué par transform (lu dans la matrice de transformation).
+   */
+  function rectRepos(element) {
+    const r = element.getBoundingClientRect();
+    const decalage = new DOMMatrixReadOnly(getComputedStyle(el.dock).transform).m42;
+    return new DOMRect(r.left, r.top - decalage, r.width, r.height);
+  }
+
+  function ouvrirDock() {
+    clearTimeout(minuterieDock);
+    minuterieDock = 0;
+    if (dockOuvert) return;
+    dockOuvert = true;
+    rectDockOuvert = rectRepos(el.dock);
+    el.dock.classList.add("is-open");
+    el.bureau.classList.add("dock-open");
+    el.poignee.setAttribute("aria-expanded", "true");
+    el.poignee.setAttribute("aria-label", "Masquer la barre des applications");
+  }
+
+  function fermerDock() {
+    clearTimeout(minuterieDock);
+    minuterieDock = 0;
+    if (!dockOuvert) return;
+    dockOuvert = false;
+    el.dock.classList.remove("is-open");
+    el.bureau.classList.remove("dock-open");
+    el.poignee.setAttribute("aria-expanded", "false");
+    el.poignee.setAttribute("aria-label", "Afficher la barre des applications");
+  }
+
+  /** Replie le dock après un délai (annulé si la souris revient dessus). */
+  function fermerBientot(delai = 450) {
+    clearTimeout(minuterieDock);
+    minuterieDock = setTimeout(() => {
+      minuterieDock = 0;
+      // On ne replie pas sous le focus clavier
+      if (!el.dock.contains(document.activeElement)) fermerDock();
+    }, delai);
+  }
+
+  /** Montre le dock quelques instants (ex. : une fenêtre vient d'y être réduite). */
+  function peek(duree = 1600) {
+    ouvrirDock();
+    fermerBientot(duree);
+  }
+
+  /** Une seule écoute des mouvements de souris pour tout le dock. */
+  function suivreSouris(e) {
+    if (e.pointerType !== "mouse" || el.bureau.hidden) return;
+    const x = e.clientX;
+    const y = e.clientY;
+
+    // 1. Faire apparaître la poignée près du bas de l'écran, au centre
+    const proche = y > window.innerHeight - ZONE_POIGNEE.hauteur &&
+                   Math.abs(x - window.innerWidth / 2) < ZONE_POIGNEE.demiLargeur;
+    el.bureau.classList.toggle("dock-near", proche);
+
+    // 2. Dock ouvert : la souris est-elle dessus (ou juste en dessous) ?
+    if (!dockOuvert) return;
+    const r = rectDockOuvert;
+    const marge = 24;
+    const surLeDock = x > r.left - marge && x < r.right + marge && y > r.top - marge;
+    if (surLeDock) {
+      clearTimeout(minuterieDock);
+      minuterieDock = 0;
+    } else if (!minuterieDock) {
+      fermerBientot();
+    }
+  }
+
+  function brancherDock() {
+    // Survol de la poignée à la souris → on déplie
+    el.poignee.addEventListener("pointerenter", (e) => {
+      if (e.pointerType === "mouse") ouvrirDock();
+    });
+    // Clic / toucher / Entrée sur la poignée → on déplie ou on replie
+    el.poignee.addEventListener("click", (e) => {
+      if (dockOuvert && e.pointerType !== "mouse") return fermerDock();
+      ouvrirDock();
+      // e.detail === 0 : le « clic » vient du clavier → focus dans le dock
+      if (e.detail === 0) OS.$(".dock__item", el.dock)?.focus();
+    });
+
+    document.addEventListener("pointermove", suivreSouris, { passive: true });
+
+    // Toucher / cliquer ailleurs replie le dock
+    document.addEventListener("pointerdown", (e) => {
+      if (dockOuvert && !e.target.closest("#dock, #dock-handle")) fermerDock();
+    }, true);
+
+    // Clavier : Échap replie ; le focus qui sort du dock le replie aussi
+    el.dock.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      fermerDock();
+      el.poignee.focus();
+    });
+    el.dock.addEventListener("focusout", (e) => {
+      if (!el.dock.contains(e.relatedTarget)) fermerBientot(300);
+    });
+
+    window.addEventListener("resize", () => { if (dockOuvert) rectDockOuvert = rectRepos(el.dock); });
+  }
+
+  /** Rectangle de l'icône d'une application dans le dock déplié. */
+  function rectItem(id) {
+    const item = OS.$(`.dock__item[data-app="${id}"]`, el.dock);
+    return item ? rectRepos(item) : null;
   }
 
   /* -------------------------------------------------------------------
@@ -292,7 +427,7 @@
   }
 
   /* -------------------------------------------------------------------
-     6. ONDULATIONS D'EAU AU CLIC SUR LE FOND D'ÉCRAN
+     6. ONDULATIONS AU CLIC SUR LE FOND D'ÉCRAN
      -------------------------------------------------------------------
      Un clic sur le fond crée deux cercles qui s'élargissent (CSS). Quand
      le front de la vague atteint une icône, celle-ci est légèrement
@@ -378,6 +513,7 @@
      ------------------------------------------------------------------- */
   async function show({ premiereFois = false } = {}) {
     el.bureau.hidden = false;
+    fermerDock();
     // Les icônes doivent être affichées pour mesurer leur taille : on les
     // place AVANT le fondu d'apparition.
     placerAleatoirement();
@@ -387,15 +523,23 @@
     majHorloge();
     clearInterval(minuterieHorloge);
     minuterieHorloge = setInterval(majHorloge, 15000);
+    // Le fond d'écran se met en place couche par couche (effet de profondeur)
+    OS.wallpaper.intro();
+    OS.wallpaper.parallaxe(true);
     await OS.showScreen(el.bureau, 500);
+
+    // Le dock se montre une fois puis se replie : on voit où il se cache
+    setTimeout(() => peek(2200), OS.reduceMotion ? 0 : 900);
 
     if (premiereFois) {
       setTimeout(() => {
         OS.toast({
           titre: "Bienvenue sur le bureau",
-          texte: "Cliquez sur une icône pour ouvrir une application. Vous pouvez aussi glisser les icônes où vous voulez.",
+          texte: OS.isTouch
+            ? "Touchez une icône pour ouvrir une application. La barre des applications se cache en bas : touchez la petite barre pour l'afficher."
+            : "Cliquez sur une icône pour ouvrir une application. La barre des applications se cache en bas : approchez la souris du bas de l'écran, au centre, pour l'afficher.",
           icone: "info",
-          duree: 7000
+          duree: 8000
         });
       }, 900);
     }
@@ -412,19 +556,33 @@
     el.appActive = OS.$("#topbar-app");
     el.ondulations = OS.$("#ripples");
     el.salut = OS.$("#desktop-greeting");
+    el.poignee = OS.$("#dock-handle");
     // Titre central : uniquement le prénom, et l'accroche définie dans data.js
     OS.$("#desktop-name").textContent = P.prenom;
     OS.$("#desktop-tag").textContent = P.accroche;
+    // Petit logo « ob » devant « OscarOS » dans la barre du haut
+    OS.$("#system-button").insertAdjacentHTML("afterbegin", OS.logo());
 
     creerIcones();
     creerDock();
+    brancherDock();
     creerBarreHaut();
     brancherOndulations();
 
-    // Redimensionnement du navigateur : on recalcule la position des icônes
-    window.addEventListener("resize", () => OS.$$(".desk-icon", el.icones).forEach(appliquerPosition));
+    // Redimensionnement du navigateur : on recalcule la position des icônes.
+    // requestAnimationFrame regroupe les nombreux événements « resize »
+    // en un seul calcul par image affichée (optimisation).
+    let demande = 0;
+    window.addEventListener("resize", () => {
+      if (demande) return;
+      demande = requestAnimationFrame(() => {
+        demande = 0;
+        OS.$$(".desk-icon", el.icones).forEach(appliquerPosition);
+      });
+    });
   }
 
   init();
   OS.desktop = { show, shuffle: placerAleatoirement };
+  OS.dock = { peek, ouvrir: ouvrirDock, fermer: fermerDock, rectItem };
 })();

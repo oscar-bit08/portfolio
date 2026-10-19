@@ -2,14 +2,16 @@
    veille.js — « VEILLE » : MISE EN VEILLE + TERMINAL
    =====================================================================
    Quand on clique sur l'icône d'alimentation :
-     1. le bureau s'assombrit et affiche « Mise en veille… » ;
-     2. l'écran « s'éteint » comme un vieux moniteur cathodique (CRT) ;
-     2 bis. sur l'écran noir, une console brute annonce une « erreur lors
-        de la mise en veille » puis « l'ouverture du terminal » ;
-     3. un terminal stylé s'allume alors et ÉCRIT petit à
-        petit le texte de veille technologique (effet machine à écrire) ;
+     1. l'écran s'éteint progressivement, de plus en plus vite (< 1 s) ;
+     2. sur l'écran noir, une console brute explique que la mise en
+        veille a échoué, qu'elle est « déviée » vers le dossier de veille
+        informatique, puis présente le sujet. Ce message reste affiché
+        quelques secondes (une touche permet de passer) ;
+     3. le terminal stylé apparaît avec un léger effet « glitch » et
+        ÉCRIT petit à petit le texte de veille (effet machine à écrire) ;
      4. à la fin, la question « Redémarrer ? [y/n] : » attend la réponse.
-        Taper « y » puis Entrée relance le système et ramène au bureau.
+        Taper « y » puis Entrée referme le terminal (glitch) et relance
+        le système jusqu'au bureau.
 
    Pour que ce soit intuitif :
      - une barre d'aide en bas explique toujours quoi faire ;
@@ -414,32 +416,83 @@
      5 bis. MESSAGE D'ERREUR DE MISE EN VEILLE
      -------------------------------------------------------------------
      Une console brute (texte sur fond noir, aucune décoration) qui fait
-     croire que la mise en veille a échoué, avant que le terminal stylé
-     ne s'ouvre. Les lignes viennent de PORTFOLIO.veille.erreur.
+     croire que la mise en veille a échoué, puis annonce le sujet de la
+     veille dans un encadré. Les lignes viennent de PORTFOLIO.veille.erreur.
+
+     Pour laisser le temps de lire :
+       - l'encadré reste affiché V.lectureErreur secondes, avec un
+         compte à rebours et une barre qui se vide ;
+       - une touche (ou un clic) pendant l'écriture affiche tout d'un
+         coup ; une touche une fois l'encadré affiché ouvre le terminal.
      ------------------------------------------------------------------- */
   async function afficherErreur() {
-    const ecran = el.erreur;
-    ecran.innerHTML = "";
-    ecran.hidden = false;
+    const ecran = el.erreur;          // déjà affiché (écran noir) par mettreEnVeille
+    let continuer = false;            // le visiteur demande à passer à la suite
+    let encadreAffiche = false;
 
-    for (const ligne of V.erreur) {
+    const passer = (e) => {
+      if (e.type === "keydown" && ["Tab", "Shift", "Control", "Alt", "Meta"].includes(e.key)) return;
+      if (encadreAffiche) continuer = true;
+      else accelerer = true;          // tout écrire d'un coup (voir taper())
+    };
+    window.addEventListener("keydown", passer);
+    ecran.addEventListener("pointerdown", passer);
+
+    // a. Le journal, ligne par ligne
+    const lignes = V.erreur.filter((l) => l.type !== "note");
+    for (const ligne of lignes) {
       const p = document.createElement("p");
       p.className = `veille-erreur__line veille-erreur__line--${ligne.type}`;
       ecran.append(p);
-      if (ligne.type === "erreur" || OS.reduceMotion) {
+      if (["erreur", "detail"].includes(ligne.type)) {
         // L'erreur « tombe » d'un coup, comme un vrai message système
         p.textContent = ligne.texte;
       } else {
-        await taper(p, ligne.texte, 75, false);
+        await taper(p, ligne.texte, 85, false);
       }
-      await OS.sleep(OS.reduceMotion ? 0 : ligne.type === "erreur" ? 700 : 350);
+      if (ligne.type === "ok") p.innerHTML = OS.esc(ligne.texte).replace(/OK$/, '<span class="veille-erreur__ok">OK</span>');
+      await pause(ligne.type === "erreur" ? 900 : ligne.type === "titre" ? 250 : 380);
+    }
+    accelerer = false;
+
+    // b. L'encadré qui présente le sujet (la phrase à lire)
+    const note = V.erreur.find((l) => l.type === "note");
+    const duree = (V.lectureErreur || 6) * 1000;
+    const boite = document.createElement("div");
+    boite.className = "veille-erreur__note";
+    boite.innerHTML = `
+      <span class="veille-erreur__badge" aria-hidden="true">i</span>
+      <p>${OS.esc(note.texte)}</p>`;
+    const suite = document.createElement("p");
+    suite.className = "veille-erreur__next";
+    suite.innerHTML = `
+      <span class="veille-erreur__bar" aria-hidden="true"><i style="animation-duration:${duree}ms"></i></span>
+      <span>Ouverture du terminal dans <b>${Math.round(duree / 1000)}</b> s · ${OS.isTouch ? "touchez l'écran" : "appuyez sur une touche"} pour continuer</span>`;
+    ecran.append(boite, suite);
+    encadreAffiche = true;
+
+    // c. Compte à rebours (interrompu par une touche ou un clic)
+    const compteur = suite.querySelector("b");
+    const debut = performance.now();
+    while (!continuer && performance.now() - debut < (OS.reduceMotion ? duree / 2 : duree)) {
+      compteur.textContent = Math.max(1, Math.ceil((duree - (performance.now() - debut)) / 1000));
+      await OS.sleep(100);
     }
 
-    // Curseur clignotant sur la dernière ligne pendant « l'ouverture »
-    ecran.lastElementChild?.classList.add("is-waiting");
-    await OS.sleep(OS.reduceMotion ? 600 : 1200);
-    ecran.hidden = true;
-    ecran.innerHTML = "";
+    window.removeEventListener("keydown", passer);
+    ecran.removeEventListener("pointerdown", passer);
+  }
+
+  /**
+   * Petit effet « glitch » (voir veille.css) : quelques images décalées,
+   * découpées en bandes et légèrement dédoublées en rouge / cyan.
+   * Volontairement court et discret.
+   */
+  async function glitch(element, classe, duree) {
+    if (OS.reduceMotion) return;
+    element.classList.add(classe);
+    await OS.sleep(duree);
+    element.classList.remove(classe);
   }
 
   /* -------------------------------------------------------------------
@@ -461,31 +514,33 @@
     attenteReponse = false;
     suivreBas = true;
     OS.emit("veille:start");
+    OS.wallpaper.parallaxe(false);
+    OS.dock.fermer();
 
-    // a. Le bureau s'assombrit, message « Mise en veille… »
-    el.desktop.classList.add("is-sleeping");
-    await OS.showScreen(el.shutdown, 400);
-    await OS.sleep(OS.reduceMotion ? 300 : 1700);
+    // a. Extinction progressive : un voile noir recouvre l'écran, de plus
+    //    en plus vite (courbe « ease-in »), en moins d'une seconde
+    el.extinction.hidden = false;
+    el.extinction.classList.add("is-on");
+    await OS.sleep(OS.reduceMotion ? 120 : 900);
 
-    // b. Extinction façon écran cathodique
-    el.ecran.classList.add("crt-off");
-    await OS.sleep(OS.reduceMotion ? 0 : 640);
+    // b. L'écran est noir : on affiche la console (vide, fond noir) PUIS
+    //    on range le bureau derrière, sans qu'aucune image ne « saute »
+    el.erreur.innerHTML = "";
+    el.erreur.hidden = false;
     OS.wm.closeAll(true);
     el.ecran.hidden = true;
-    el.ecran.classList.remove("crt-off");
-    el.shutdown.hidden = true;
-    el.shutdown.classList.remove("is-visible");
+    el.extinction.classList.remove("is-on");
+    el.extinction.hidden = true;
     el.desktop.hidden = true;
-    el.desktop.classList.remove("is-visible", "is-sleeping");
+    el.desktop.classList.remove("is-visible");
 
-    // c. Écran noir quelques instants
-    await OS.sleep(OS.reduceMotion ? 150 : 700);
-
-    // d. Petit message « erreur lors de la mise en veille, ouverture du terminal »
+    // c. Écran noir un court instant, puis le message d'erreur détaillé
+    await OS.sleep(OS.reduceMotion ? 100 : 500);
     await afficherErreur();
-    await OS.sleep(OS.reduceMotion ? 0 : 150);
 
-    // e. Le terminal s'allume
+    // d. Le terminal apparaît avec un léger glitch (la console noire
+    //    reste dessous pendant l'effet, puis disparaît)
+    accelerer = false;
     el.sortie.innerHTML = "";
     el.fichier.textContent = V.fichier;
     caracteresEcrits = 0;
@@ -493,9 +548,9 @@
     majProgression();
     demarrerHorloge();
     el.terminal.hidden = false;
-    el.terminal.classList.add("crt-on");
-    await OS.sleep(OS.reduceMotion ? 0 : 700);
-    el.terminal.classList.remove("crt-on");
+    await glitch(el.terminal, "glitch-in", 420);
+    el.erreur.hidden = true;
+    el.erreur.innerHTML = "";
 
     rendu = derouler();
     await rendu;
@@ -510,18 +565,21 @@
     }
     await OS.sleep(OS.reduceMotion ? 0 : 400);
 
-    // Le terminal s'éteint à son tour
-    el.terminal.classList.add("crt-off");
-    await OS.sleep(OS.reduceMotion ? 0 : 640);
+    // Le terminal se referme sur un glitch. L'écran de démarrage (noir)
+    // est affiché dessous AVANT de masquer le terminal.
+    if (!OS.reduceMotion) {
+      el.terminal.classList.add("glitch-out");
+      await OS.sleep(380);
+    }
+    el.ecran.hidden = false;
+    const demarrage = OS.boot.run({ court: true });
     el.terminal.hidden = true;
-    el.terminal.classList.remove("crt-off");
+    el.terminal.classList.remove("glitch-out");
     clearInterval(minuterieHorloge);
     el.sortie.innerHTML = "";
-    await OS.sleep(OS.reduceMotion ? 0 : 500);
 
     // Redémarrage : écran de démarrage, puis retour au bureau
-    el.ecran.hidden = false;
-    await OS.boot.run({ court: true });
+    await demarrage;
     await OS.desktop.show({ premiereFois: false });
     OS.toast({ titre: "Système redémarré", texte: "Bon retour sur le bureau !", icone: "power", duree: 3500 });
     actif = false;
@@ -533,7 +591,7 @@
   function init() {
     el.ecran = OS.$("#os-screen");
     el.desktop = OS.$("#desktop");
-    el.shutdown = OS.$("#shutdown");
+    el.extinction = OS.$("#extinction");
     el.terminal = OS.$("#terminal");
     el.sortie = OS.$("#term-output");
     el.aside = OS.$("#term-aside");

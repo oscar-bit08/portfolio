@@ -17,21 +17,79 @@
   display: grid;
   place-content: center;
   justify-items: center;
-  gap: 18px;
+  gap: 54px;
   background: #000;
 }
+
+/* ----- Logo « ob » -----
+   Ordre d'apparition (les délais s'enchaînent) :
+     1. le disque grossit en sortant du flou      0,00 s → 0,70 s
+     2. l'anneau bleu du « o » se trace           0,35 s → 1,15 s
+     3. le « b » glisse depuis la gauche          0,55 s → 1,15 s
+     4. le nom apparaît                           0,85 s → 1,45 s
+     5. un reflet de lumière balaie le logo       1,25 s → 2,05 s
+   transform-box: fill-box → chaque forme s'anime autour de son propre
+   centre (et non du coin du SVG). */
 .boot__logo {
-  filter: drop-shadow(0 0 40px rgba(56, 189, 248, .45));
-  animation: respire 2.4s ease-in-out infinite;
+  position: relative;
+  width: min(272px, 64vw);
 }
-.boot__name {
-  font-size: 22px;
-  font-weight: 300;
-  letter-spacing: .02em;
-  color: rgba(255, 255, 255, .9);
-  margin-bottom: 34px;
+.logo { display: block; width: 100%; height: auto; overflow: visible; }
+
+/* Halo bleuté qui « respire » derrière le logo (opacité + échelle :
+   animation peu coûteuse, gérée par la carte graphique) */
+.boot__halo {
+  position: absolute;
+  left: 28%;
+  top: 50%;
+  width: 70%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(76, 194, 255, .32), transparent 65%);
+  animation: apparaitreHalo 1.2s ease-out both, respire 3.2s 1.2s ease-in-out infinite;
 }
-.boot__name span { font-weight: 700; }
+@keyframes apparaitreHalo { from { opacity: 0; transform: scale(.6); } }
+
+.logo__disc {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: logoDisque .7s cubic-bezier(.2, .9, .25, 1.15) both;
+}
+@keyframes logoDisque {
+  from { opacity: 0; transform: scale(.55); filter: blur(10px); }
+  to   { opacity: 1; transform: none; filter: blur(0); }
+}
+.logo__ring-bg { animation: fondu .4s .3s both; }
+/* L'anneau est un cercle épais dont on « déroule » le trait :
+   dasharray = périmètre (2π × 25,5 ≈ 160,2), dashoffset de 160 à 0 */
+.logo__ring {
+  stroke-dasharray: 160.3;
+  stroke-dashoffset: 160.3;
+  animation: logoAnneau .8s .35s cubic-bezier(.65, 0, .35, 1) forwards;
+}
+@keyframes logoAnneau { to { stroke-dashoffset: 0; } }
+.logo__b {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: logoB .6s .55s cubic-bezier(.2, .9, .25, 1.1) both;
+}
+@keyframes logoB { from { opacity: 0; transform: translateX(-26px) scaleX(.8); } }
+.logo__name {
+  font-family: var(--font-ui);
+  font-size: 18.5px;
+  font-weight: 650;
+  letter-spacing: -.01em;
+  fill: #cdd7e5;
+  animation: logoNom .6s .85s ease-out both;
+}
+@keyframes logoNom { from { opacity: 0; transform: translateY(6px); } }
+.logo__sheen { animation: logoReflet .8s 1.25s ease-in-out both; }
+@keyframes logoReflet {
+  from { transform: skewX(-18deg) translateX(0); }
+  to   { transform: skewX(-18deg) translateX(400px); }
+}
+@keyframes fondu { from { opacity: 0; } }
 
 @keyframes respire {
   0%, 100% { transform: scale(1); opacity: .95; }
@@ -152,7 +210,7 @@
 .oobe__text p + p { margin-top: 10px; }
 .oobe__text strong { color: var(--text); font-weight: 600; }
 
-/* Boutons Retour / Suivant (en bas à droite, comme sous Windows) */
+/* Boutons Précédent / Suivant (en bas à droite, comme sous Windows) */
 .oobe__actions {
   display: flex;
   justify-content: flex-end;
@@ -474,11 +532,41 @@
   to   { opacity: 1; transform: none; }
 }
 
-/* 4e. Projet : trajectoire qui défile et fusée qui vibre */
+/* 4e. Projet : escalier de progression
+   - les marches « poussent » depuis le sol l'une après l'autre ;
+   - les repères (coche, point, drapeau) apparaissent ensuite ;
+   - la courbe en pointillés défile vers le haut, l'anneau de l'étape en
+     cours pulse et le drapeau ondule légèrement. */
+.illu__step {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: pousser .6s var(--ease-spring) both;
+  animation-delay: calc(.2s + var(--i) * .18s);
+}
+@keyframes pousser { from { opacity: 0; transform: scaleY(.15); } }
+.illu__badge {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+  animation: apparaitre .5s var(--ease-spring) both;
+  animation-delay: calc(.75s + var(--i) * .18s);
+}
 .illu__path { animation: pointilles 1.6s linear infinite; }
-@keyframes pointilles { to { stroke-dashoffset: -22; } }
-.illu__rocket { animation: vibrer .18s ease-in-out infinite alternate; }
-@keyframes vibrer { to { translate: .8px -.8px; } }
+@keyframes pointilles { to { stroke-dashoffset: -18; } }
+.illu__pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulser 1.8s ease-out infinite;
+}
+@keyframes pulser {
+  from { transform: scale(1); opacity: .9; }
+  to   { transform: scale(2.3); opacity: 0; }
+}
+.illu__flag {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: onduler 2.4s ease-in-out infinite alternate;
+}
+@keyframes onduler { to { transform: skewY(-6deg) scaleX(.92); } }
 
 /* ---------------------------------------------------------------------
    5. TRANSITION « PRÉPARATION DE VOTRE BUREAU »
@@ -489,16 +577,26 @@
   place-content: center;
   justify-items: center;
   gap: 40px;
-  /* Dégradé animé qui change lentement de couleur (comme sous Windows) */
-  background: linear-gradient(120deg, #031a3a, #0b3a6e, #0e5a8a, #1e3a8a, #031a3a);
-  background-size: 400% 400%;
-  animation: degrade 8s ease infinite;
+  overflow: hidden;
+  background: #031a3a;
 }
-@keyframes degrade {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Dégradé qui change lentement de couleur (comme sous Windows).
+   OPTIMISATION : au lieu d'animer « background-position » (le navigateur
+   redessinerait tout l'écran à chaque image), on dessine le dégradé une
+   fois sur un calque 4 fois plus large et on le fait glisser avec
+   transform, une opération confiée à la carte graphique. */
+.hello::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 400%;
+  z-index: -1;
+  background: linear-gradient(90deg, #031a3a, #0b3a6e, #0e5a8a, #1e3a8a, #0e5a8a, #0b3a6e, #031a3a);
+  animation: degrade 16s ease-in-out infinite alternate;
 }
+@keyframes degrade { to { transform: translateX(-75%); } }
 .hello__text {
   font-size: clamp(26px, 4.4vw, 48px);
   font-weight: 300;
@@ -524,6 +622,7 @@
   .oobe__visual { border-right: 0; border-bottom: 1px solid var(--line); }
   .illu { width: auto; height: 92%; }
   .illu__chip { font-size: 11px; padding: 5px 9px; }
+  .illu__chip--secondaire { display: none; }
   .oobe__content { padding: 18px 18px 16px; }
   .oobe__slide { padding-top: 18px; }
   .oobe__step { display: none; }   /* étiquettes masquées : on garde les barres */
