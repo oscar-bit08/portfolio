@@ -853,15 +853,8 @@ window.PORTFOLIO = {
     // Téléphone volontairement retiré de la version en ligne (site public).
     // Pour le remettre, ajouter un bloc { id: "telephone", nom, valeur,
     // action: "Appeler", url: "tel:+33…", icone: "phone", couleur, copier }.
-    {
-      id: "projets",
-      nom: "Page projets",
-      valeur: "oscar-bit08.github.io/Projects",
-      action: "Ouvrir la page",
-      url: "https://oscar-bit08.github.io/Projects/",
-      icone: "globe",
-      couleur: "#8b5cf6"
-    }
+    // L'ancienne « Page projets » (oscar-bit08.github.io/Projects) est retirée :
+    // ce portfolio rassemble désormais les projets (appli Réalisations).
   ],
 
   /* -------------------------------------------------------------------
