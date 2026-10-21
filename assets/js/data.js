@@ -33,11 +33,10 @@ window.PORTFOLIO = {
     prenom: "Oscar",
     nom: "Bonant",
     initiales: "OB",
-    age: 18,
     titre: "Étudiant en BTS SIO",
     specialite: "Support informatique & traitement de données",
     ecole: "NEXA Lyon",
-    ville: "Villeurbanne (69100)",
+    // Localisation volontairement large (pas de ville ni de code postal)
     region: "Métropole lyonnaise",
     // Alternance en cours (affichée sur le bureau, dans les slides et dans Contact)
     alternance: {
@@ -69,7 +68,7 @@ window.PORTFOLIO = {
       illustration: "bienvenue",
       titre: "Bienvenue sur mon portfolio",
       paragraphes: [
-        "Je m'appelle <strong>Oscar Bonant</strong>, j'ai 18 ans et je suis étudiant en <strong>BTS SIO</strong> (Services Informatiques aux Organisations) à NEXA Lyon, en <strong>alternance chez TDI-Group</strong>.",
+        "Je m'appelle <strong>Oscar Bonant</strong> et je suis étudiant en <strong>BTS SIO</strong> (Services Informatiques aux Organisations) à NEXA Lyon, en <strong>alternance chez TDI-Group</strong>.",
         "Ce portfolio fonctionne comme un petit système d'exploitation. Avant d'arriver sur le bureau, je vous propose une configuration express en 5 étapes pour faire connaissance."
       ],
       bouton: "Commencer"
@@ -101,7 +100,7 @@ window.PORTFOLIO = {
       liste: [
         {
           titre: "BTS SIO",
-          sousTitre: "Services Informatiques aux Organisations · NEXA, Lyon 2e",
+          sousTitre: "Services Informatiques aux Organisations · NEXA Lyon",
           periode: "Depuis sept. 2026",
           details: [
             "Formation aux métiers de l'informatique : support et maintenance, administration des systèmes, développement et gestion des données.",
@@ -110,7 +109,7 @@ window.PORTFOLIO = {
         },
         {
           titre: "Baccalauréat général",
-          sousTitre: "Spécialités Mathématiques & NSI · Lycée Pierre Brossolette, Villeurbanne",
+          sousTitre: "Spécialités Mathématiques & NSI",
           periode: "2023 – 2026",
           details: [
             "Spécialités Mathématiques et Numérique & Sciences Informatiques (NSI).",
@@ -119,7 +118,7 @@ window.PORTFOLIO = {
         },
         {
           titre: "TUMO",
-          sousTitre: "Initiation à la programmation et à la modélisation 3D · Campus 69260",
+          sousTitre: "Initiation à la programmation et à la modélisation 3D",
           periode: "Oct. 2023 – juil. 2025",
           details: [
             "Initiation à la création numérique : programmation et modélisation 3D.",
@@ -147,7 +146,7 @@ window.PORTFOLIO = {
         },
         {
           titre: "Mairie de Caluire",
-          sousTitre: "Stage d'observation · Caluire-et-Cuire (69300)",
+          sousTitre: "Stage d'observation · Métropole lyonnaise",
           periode: "Juin 2024",
           details: [
             "Diagnostic et résolution d'incidents sur Windows 10/11 (assistance niveau 1-2).",
@@ -156,7 +155,7 @@ window.PORTFOLIO = {
         },
         {
           titre: "CGI",
-          sousTitre: "Stage d'observation · Lyon 9e",
+          sousTitre: "Stage d'observation · Lyon",
           periode: "Janv. – févr. 2023",
           details: [
             "Immersion dans une entreprise de services numériques.",

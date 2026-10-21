@@ -103,9 +103,9 @@
             <span class="id-card__badge">${OS.icon("check", { taille: 12, epaisseur: 3 })}</span>
           </div>
           <p class="id-card__name">${OS.esc(P.prenom)} ${OS.esc(P.nom)}</p>
-          <p class="id-card__role">${OS.esc(P.titre)} · ${P.age} ans</p>
+          <p class="id-card__role">${OS.esc(P.titre)}</p>
           <div class="id-card__bars"><i style="--w:86%"></i><i style="--w:62%"></i><i style="--w:74%"></i></div>
-          <div class="id-card__foot">${OS.icon("mapPin", { taille: 13 })} ${OS.esc(P.ville.replace(/\s*\(.*\)/, ""))} · ${OS.esc(P.region)}</div>
+          <div class="id-card__foot">${OS.icon("mapPin", { taille: 13 })} ${OS.esc(P.region)}</div>
         </div>
         ${pastille("globe", "Anglais B2", 0, 12, 0)}
         ${pastille("server", "15+ postes", 66, 4, .9)}

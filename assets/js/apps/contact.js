@@ -48,7 +48,7 @@
             <span class="contacts__avatar">${OS.esc(P.initiales)}</span>
             <h2 class="contacts__name">${OS.esc(P.prenom)} ${OS.esc(P.nom)}</h2>
             <p class="contacts__role">${OS.esc(P.titre)} · ${OS.esc(P.specialite)}</p>
-            <p class="contacts__loc">${OS.icon("mapPin", { taille: 14 })} ${OS.esc(P.ville)} · ${OS.esc(P.region)}</p>
+            <p class="contacts__loc">${OS.icon("mapPin", { taille: 14 })} ${OS.esc(P.region)}</p>
             <span class="status-pill"><i></i>${OS.esc(P.disponibilite)}</span>
           </header>
 
